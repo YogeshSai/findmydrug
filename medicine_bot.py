@@ -58,18 +58,18 @@ class MedicineBot:
 
     def load_dataset(self):
 
-        path = "Data/medicine_dataset.csv"
+        zip_path = "Data/medicine_dataset.zip"
 
-        df = pd.read_csv(
-            path,
-            low_memory=False
-        )
+        with zipfile.ZipFile(zip_path) as z:
+            csv_file = z.namelist()[0]
+            with z.open(csv_file) as f:
+                df = pd.read_csv(
+                    f,
+                    low_memory=False
+                )
 
         print("✅ Dataset Loaded")
         print(f"📦 Total Medicines: {len(df)}")
-
-        print("\n📋 Dataset Columns:")
-        print(df.columns.tolist())
 
         return df
 
