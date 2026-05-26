@@ -125,38 +125,10 @@ st.markdown("""
 
 .fact-card .fact-text {
     color: #dddddd !important;
-    font-size: 1.15rem !important;
-    line-height: 1.8 !important;
+    font-size: 1.45rem !important;
+    line-height: 1.9 !important;
     font-weight: 400 !important;
     margin: 0 !important;
-}
-
-/* ---- SUGGESTION PILLS ---- */
-
-.suggestions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.6rem;
-    margin-top: 1.6rem;
-}
-
-.pill {
-    background: #111111;
-    border: 1px solid #2a2a2a;
-    border-radius: 100px;
-    padding: 0.45rem 1.1rem;
-    font-size: 0.85rem;
-    color: #aaaaaa;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    white-space: nowrap;
-}
-
-.pill:hover {
-    background: #1a1a1a;
-    color: #ffffff;
-    border-color: #444444;
 }
 
 /* ---- CHAT MESSAGES ---- */
@@ -274,7 +246,7 @@ code {
     }
 
     .fact-card .fact-text {
-        font-size: 1rem !important;
+        font-size: 1.2rem !important;
     }
 
     [data-testid="stChatInput"] {
@@ -325,13 +297,6 @@ if len(st.session_state.messages) == 0:
         '<div class="fact-card">'
         '<span class="fact-label">💡 Did you know</span>'
         '<p class="fact-text">' + random_fact + '</p>'
-        '<div class="suggestions">'
-        '<span class="pill">Paracetamol</span>'
-        '<span class="pill">Ibuprofen</span>'
-        '<span class="pill">Amoxicillin</span>'
-        '<span class="pill">Metformin</span>'
-        '<span class="pill">Omeprazole</span>'
-        '</div>'
         '</div>'
         '</div>'
     )
