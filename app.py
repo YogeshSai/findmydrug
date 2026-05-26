@@ -7,7 +7,7 @@ import random
 # =====================================================
 
 st.set_page_config(
-    page_title="AI Medicine Assistant",
+    page_title="Find my Drug",
     page_icon="💊",
     layout="centered",
     initial_sidebar_state="collapsed"
@@ -273,8 +273,8 @@ if "messages" not in st.session_state:
 
 st.markdown("""
 <div class="app-header">
-    <span class="icon">💊</span>
-    <h1>Medicine Assistant</h1>
+    <span class="icon"></span>
+    <h1>Find my Drug</h1>
     <p>Search medicines, uses, side effects and substitutes</p>
 </div>
 """, unsafe_allow_html=True)
@@ -306,7 +306,7 @@ for message in st.session_state.messages:
 # CHAT INPUT
 # =====================================================
 
-query = st.chat_input("Ask about a medicine, symptom or drug name...")
+query = st.chat_input("Ask about a medicine")
 
 # =====================================================
 # HANDLE QUERY
