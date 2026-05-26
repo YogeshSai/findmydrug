@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from medicine_bot import MedicineBot
 import random
 
@@ -45,21 +46,15 @@ st.markdown("""
     box-sizing: border-box;
 }
 
-/* ---- BACKGROUND ---- */
-
 .stApp {
     background: #000000;
     font-family: 'Inter', sans-serif;
     color: #ffffff;
 }
 
-/* ---- HIDE STREAMLIT CHROME ---- */
-
 #MainMenu, footer, header {
     visibility: hidden;
 }
-
-/* ---- CONTAINER ---- */
 
 .block-container {
     max-width: 760px !important;
@@ -114,7 +109,7 @@ st.markdown("""
 }
 
 .fact-card .fact-label {
-    font-size: 1.1rem;
+    font-size: 0.78rem;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -142,11 +137,11 @@ st.markdown("""
     border-bottom: 1px solid #1a1a1a !important;
 }
 
-/* ---- CHAT INPUT ---- */
+/* ---- CHAT INPUT — hidden/shown via JS ---- */
 
 [data-testid="stChatInput"] {
     position: fixed !important;
-    bottom: 8vh !important;
+    bottom: 10vh !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: min(760px, 92%) !important;
@@ -156,6 +151,13 @@ st.markdown("""
     box-shadow: 0 8px 40px rgba(0,0,0,0.8) !important;
     z-index: 999 !important;
     padding: 0.4rem !important;
+    transition: opacity 0.3s ease, transform 0.3s ease !important;
+}
+
+[data-testid="stChatInput"].hide-bar {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateX(-50%) translateY(20px) !important;
 }
 
 [data-testid="stChatInput"] textarea {
@@ -218,37 +220,19 @@ code {
     color: #aaaaaa !important;
 }
 
-/* ---- SCROLLBAR ---- */
-
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #222222; border-radius: 10px; }
 
-/* ---- MOBILE ---- */
-
 @media (max-width: 768px) {
-
     .block-container {
         padding-left: 1.2rem !important;
         padding-right: 1.2rem !important;
     }
-
-    .app-header h1 {
-        font-size: 2rem !important;
-    }
-
-    .app-header p {
-        font-size: 0.92rem !important;
-    }
-
-    .fact-card {
-        padding: 1.8rem 1.6rem;
-    }
-
-    .fact-card .fact-text {
-        font-size: 1.2rem !important;
-    }
-
+    .app-header h1 { font-size: 2rem !important; }
+    .app-header p  { font-size: 0.92rem !important; }
+    .fact-card     { padding: 1.8rem 1.6rem; }
+    .fact-card .fact-text { font-size: 1.2rem !important; }
     [data-testid="stChatInput"] {
         width: 94% !important;
         bottom: 10vh !important;
@@ -257,6 +241,75 @@ code {
 
 </style>
 """, unsafe_allow_html=True)
+
+# =====================================================
+# SCROLL-AWARE JS — hides bar on scroll up, shows on scroll down
+# Injected into the parent frame via postMessage trick inside an iframe
+# =====================================================
+
+components.html("""
+<script>
+(function () {
+    // Walk up to the top-level window (Streamlit host)
+    const win = window.parent || window;
+
+    let lastScrollY = 0;
+    let ticking = false;
+
+    function getScrollContainer() {
+        // Streamlit renders content inside .main > div[data-testid="stAppViewContainer"]
+        // The actual scrollable element is the .main block
+        return (
+            win.document.querySelector('.main') ||
+            win.document.querySelector('[data-testid="stAppViewContainer"]') ||
+            win.document.documentElement
+        );
+    }
+
+    function applyVisibility(scrollTop) {
+        const bar = win.document.querySelector('[data-testid="stChatInput"]');
+        if (!bar) return;
+
+        const diff = scrollTop - lastScrollY;
+
+        // Scrolling UP → hide
+        if (diff < -4) {
+            bar.classList.add('hide-bar');
+        }
+        // Scrolling DOWN or at top → show
+        else if (diff > 4 || scrollTop < 10) {
+            bar.classList.remove('hide-bar');
+        }
+
+        lastScrollY = scrollTop;
+        ticking = false;
+    }
+
+    function onScroll() {
+        if (!ticking) {
+            const el = getScrollContainer();
+            const scrollTop = el.scrollTop || win.scrollY || 0;
+            win.requestAnimationFrame(() => applyVisibility(scrollTop));
+            ticking = true;
+        }
+    }
+
+    // Attach listener once DOM is ready
+    function attach() {
+        const el = getScrollContainer();
+        if (el) {
+            el.addEventListener('scroll', onScroll, { passive: true });
+            win.addEventListener('scroll', onScroll, { passive: true });
+        } else {
+            setTimeout(attach, 300);
+        }
+    }
+
+    // Small delay so Streamlit DOM is fully painted
+    setTimeout(attach, 800);
+})();
+</script>
+""", height=0)
 
 # =====================================================
 # LOAD BOT
@@ -281,7 +334,7 @@ if "messages" not in st.session_state:
 
 st.markdown("""
 <div class="app-header">
-    <h1>Find my Drug</h1>
+    <h1>💊 Find my Drug</h1>
     <p>Search medicines, uses, side effects and substitutes</p>
 </div>
 """, unsafe_allow_html=True)
@@ -291,7 +344,6 @@ st.markdown("""
 # =====================================================
 
 if len(st.session_state.messages) == 0:
-
     fact_card_html = (
         '<div class="fact-wrapper">'
         '<div class="fact-card">'
@@ -314,7 +366,7 @@ for message in st.session_state.messages:
 # CHAT INPUT
 # =====================================================
 
-query = st.chat_input("Ask about a medicine")
+query = st.chat_input("Ask about a medicine, symptom or drug name...")
 
 # =====================================================
 # HANDLE QUERY
