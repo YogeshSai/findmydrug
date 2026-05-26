@@ -14,75 +14,115 @@ st.set_page_config(
 )
 
 # =====================================================
-# CUSTOM MOBILE CSS
+# CUSTOM CSS
 # =====================================================
 
 st.markdown("""
 <style>
 
-/* Main App */
+/* Hide Streamlit Branding */
+#MainMenu {
+    visibility: hidden;
+}
+
+footer {
+    visibility: hidden;
+}
+
+header {
+    visibility: hidden;
+}
+
+/* Main Container */
 .block-container {
-    padding-top: 1rem;
+    padding-top: 0.5rem;
     padding-bottom: 2rem;
     padding-left: 1rem;
     padding-right: 1rem;
-    max-width: 900px;
+    max-width: 850px;
 }
 
-/* Title */
+/* Main Title */
 .main-title {
     text-align: center;
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-top: 0rem;
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+    word-wrap: break-word;
 }
 
 /* Subtitle */
 .subtitle {
     text-align: center;
-    color: gray;
-    margin-bottom: 2rem;
+    color: #9CA3AF;
     font-size: 0.95rem;
+    margin-bottom: 1.8rem;
+    line-height: 1.5;
 }
 
-/* Search Box */
+/* Search Input */
 .stTextInput input {
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 14px;
     font-size: 16px;
+    border: 1px solid #374151;
 }
 
 /* Button */
 .stButton button {
     width: 100%;
-    border-radius: 12px;
+    border-radius: 14px;
     height: 3rem;
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: 600;
+    border: none;
 }
 
 /* Result Card */
 .result-card {
     background-color: #111827;
     padding: 1.2rem;
-    border-radius: 16px;
+    border-radius: 18px;
     margin-top: 1rem;
+    border: 1px solid #1F2937;
+    overflow-wrap: break-word;
 }
 
-/* Mobile Optimization */
+/* Scroll Fix */
+html, body, [class*="css"] {
+    overflow-x: hidden;
+}
+
+/* Mobile Responsive */
 @media (max-width: 768px) {
 
     .main-title {
         font-size: 1.6rem;
+        margin-top: 0rem;
+        padding-top: 0rem;
     }
 
     .subtitle {
-        font-size: 0.85rem;
+        font-size: 0.82rem;
+        margin-bottom: 1rem;
     }
 
     .block-container {
+        padding-top: 0.2rem;
         padding-left: 0.7rem;
         padding-right: 0.7rem;
+    }
+
+    .stButton button {
+        height: 2.8rem;
+        font-size: 0.95rem;
+    }
+
+    .result-card {
+        padding: 0.9rem;
+        border-radius: 14px;
     }
 }
 
@@ -95,6 +135,7 @@ st.markdown("""
 
 @st.cache_resource
 def load_bot():
+
     return MedicineBot()
 
 
@@ -105,46 +146,89 @@ bot = load_bot()
 # =====================================================
 
 st.markdown(
-    '<div class="main-title">Find my Drug</div>',
+    """
+    <div class="main-title">
+        Find my Drug💊
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
 st.markdown(
-    '<div class="subtitle">Search medicines, uses, substitutes and side effects instantly</div>',
+    """
+    <div class="subtitle">
+        Search medicines, substitutes, side effects and composition instantly
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
 # =====================================================
-# SEARCH BOX
+# SEARCH INPUT
 # =====================================================
 
 query = st.text_input(
-    "Enter Medicine Name",
-    placeholder="Example: Dolo 650"
+    label="Medicine Name",
+    placeholder="Example: Dolo 650",
+    label_visibility="collapsed"
 )
 
 # =====================================================
 # SEARCH BUTTON
 # =====================================================
 
-if st.button("Search Medicine"):
+search_clicked = st.button(
+    "Search Medicine"
+)
+
+# =====================================================
+# SEARCH ACTION
+# =====================================================
+
+if search_clicked:
 
     if query.strip():
 
         with st.spinner("Searching medicine..."):
 
-            result = bot.search_medicine(query)
+            try:
 
-            response = bot.format_response(result)
+                # -----------------------------------------
+                # SEARCH MEDICINE
+                # -----------------------------------------
 
-            st.markdown(
-                f'<div class="result-card">{response}</div>',
-                unsafe_allow_html=True
-            )
+                result = bot.search_medicine(query)
+
+                # -----------------------------------------
+                # FORMAT RESPONSE
+                # -----------------------------------------
+
+                response = bot.format_response(result)
+
+                # -----------------------------------------
+                # DISPLAY RESULT
+                # -----------------------------------------
+
+                st.markdown(
+                    f"""
+                    <div class="result-card">
+                    {response}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            except Exception as e:
+
+                st.error(
+                    f"Error: {str(e)}"
+                )
 
     else:
 
-        st.warning("Please enter a medicine name")
+        st.warning(
+            "Please enter a medicine name"
+        )
 
 # =====================================================
 # FOOTER
@@ -153,5 +237,5 @@ if st.button("Search Medicine"):
 st.markdown("---")
 
 st.caption(
-    "⚠️ This chatbot is for informational purposes only and not medical advice."
+    "⚠️ This chatbot is for informational purposes only and should not replace professional medical advice."
 )
