@@ -114,7 +114,7 @@ st.markdown("""
 }
 
 .fact-card .fact-label {
-    font-size: 0.78rem;
+    font-size: 0.88rem;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -281,7 +281,7 @@ if "messages" not in st.session_state:
 
 st.markdown("""
 <div class="app-header">
-    <h1>💊 Find my Drug</h1>
+    <h1>Find my Drug</h1>
     <p>Search medicines, uses, side effects and substitutes</p>
 </div>
 """, unsafe_allow_html=True)
@@ -314,7 +314,7 @@ for message in st.session_state.messages:
 # CHAT INPUT
 # =====================================================
 
-query = st.chat_input("Ask about a medicine, symptom or drug name...")
+query = st.chat_input("Ask about a medicine")
 
 # =====================================================
 # HANDLE QUERY
