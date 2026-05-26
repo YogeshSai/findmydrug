@@ -73,7 +73,7 @@ st.markdown("""
 
 .app-header h1 {
     font-size: 2.8rem !important;
-    font-weight: 700 !important;
+    font-weight: 900 !important;
     color: #ffffff !important;
     letter-spacing: -1px !important;
     margin: 0 0 0.6rem !important;
@@ -334,7 +334,7 @@ if "messages" not in st.session_state:
 
 st.markdown("""
 <div class="app-header">
-    <h1>💊 Find my Drug</h1>
+    <h1>Find my Drug</h1>
     <p>Search medicines, uses, side effects and substitutes</p>
 </div>
 """, unsafe_allow_html=True)
@@ -366,7 +366,7 @@ for message in st.session_state.messages:
 # CHAT INPUT
 # =====================================================
 
-query = st.chat_input("Ask about a medicine, symptom or drug name...")
+query = st.chat_input("Ask about a medicine")
 
 # =====================================================
 # HANDLE QUERY
