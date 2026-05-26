@@ -33,13 +33,13 @@ medicine_facts = [
 random_fact = random.choice(medicine_facts)
 
 # =====================================================
-# CSS — Clean Claude-style UI
+# CSS
 # =====================================================
 
 st.markdown("""
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 *, *::before, *::after {
     box-sizing: border-box;
@@ -48,9 +48,9 @@ st.markdown("""
 /* ---- BACKGROUND ---- */
 
 .stApp {
-    background: #0d1117;
+    background: #000000;
     font-family: 'Inter', sans-serif;
-    color: #e6edf3;
+    color: #ffffff;
 }
 
 /* ---- HIDE STREAMLIT CHROME ---- */
@@ -62,42 +62,35 @@ st.markdown("""
 /* ---- CONTAINER ---- */
 
 .block-container {
-    max-width: 720px !important;
-    padding-top: 3rem !important;
+    max-width: 760px !important;
+    padding-top: 0 !important;
     padding-bottom: 2rem !important;
-    padding-left: 1.5rem !important;
-    padding-right: 1.5rem !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
 }
 
 /* ---- HEADER ---- */
 
 .app-header {
     text-align: center;
-    padding: 2rem 0 2.5rem;
-}
-
-.app-header .icon {
-    font-size: 2rem;
-    display: block;
-    margin-bottom: 0.75rem;
+    padding: 3.5rem 0 1.5rem;
 }
 
 .app-header h1 {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 1.6rem !important;
-    font-weight: 600 !important;
-    color: #e6edf3 !important;
-    letter-spacing: -0.4px !important;
-    margin: 0 0 0.5rem !important;
-    line-height: 1.3 !important;
+    font-size: 2.8rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    letter-spacing: -1px !important;
+    margin: 0 0 0.6rem !important;
+    line-height: 1.2 !important;
 }
 
 .app-header p {
-    color: #7d8590 !important;
-    font-size: 0.88rem !important;
+    color: #888888 !important;
+    font-size: 1.05rem !important;
     font-weight: 400 !important;
     margin: 0 !important;
-    line-height: 1.5 !important;
+    line-height: 1.6 !important;
 }
 
 /* ---- FACT CARD ---- */
@@ -106,36 +99,64 @@ st.markdown("""
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 40vh;
+    min-height: 44vh;
     padding: 1rem 0;
 }
 
 .fact-card {
     width: 100%;
-    max-width: 560px;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 12px;
-    padding: 1.6rem 2rem;
+    max-width: 620px;
+    background: #111111;
+    border: 1px solid #222222;
+    border-radius: 16px;
+    padding: 2.4rem 2.8rem;
     text-align: center;
 }
 
 .fact-card .fact-label {
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #7d8590;
-    margin-bottom: 0.75rem;
+    color: #555555;
+    margin-bottom: 1rem;
     display: block;
 }
 
 .fact-card .fact-text {
-    color: #c9d1d9 !important;
-    font-size: 0.92rem !important;
-    line-height: 1.7 !important;
+    color: #dddddd !important;
+    font-size: 1.15rem !important;
+    line-height: 1.8 !important;
     font-weight: 400 !important;
     margin: 0 !important;
+}
+
+/* ---- SUGGESTION PILLS ---- */
+
+.suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1.6rem;
+}
+
+.pill {
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    border-radius: 100px;
+    padding: 0.45rem 1.1rem;
+    font-size: 0.85rem;
+    color: #aaaaaa;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.pill:hover {
+    background: #1a1a1a;
+    color: #ffffff;
+    border-color: #444444;
 }
 
 /* ---- CHAT MESSAGES ---- */
@@ -144,106 +165,121 @@ st.markdown("""
     background: transparent !important;
     border: none !important;
     border-radius: 0 !important;
-    padding: 0.6rem 0 !important;
+    padding: 1.2rem 0 !important;
     margin-bottom: 0 !important;
-    border-bottom: 1px solid #21262d !important;
+    border-bottom: 1px solid #1a1a1a !important;
 }
 
 /* ---- CHAT INPUT ---- */
 
 [data-testid="stChatInput"] {
     position: fixed !important;
-    bottom: 14vh !important;
+    bottom: 10vh !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: min(720px, 92%) !important;
-    background: #161b22 !important;
-    backdrop-filter: blur(12px) !important;
-    border-radius: 12px !important;
-    border: 1px solid #30363d !important;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.5) !important;
+    width: min(760px, 92%) !important;
+    background: #111111 !important;
+    border-radius: 14px !important;
+    border: 1px solid #2a2a2a !important;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.8) !important;
     z-index: 999 !important;
-    padding: 0.3rem !important;
+    padding: 0.4rem !important;
 }
 
 [data-testid="stChatInput"] textarea {
-    color: #e6edf3 !important;
+    color: #ffffff !important;
     font-family: 'Inter', sans-serif !important;
-    font-size: 0.93rem !important;
+    font-size: 1rem !important;
     background: transparent !important;
 }
 
 [data-testid="stChatInput"] textarea::placeholder {
-    color: #484f58 !important;
+    color: #444444 !important;
 }
 
 /* ---- RESPONSE TYPOGRAPHY ---- */
 
+h1 {
+    color: #ffffff !important;
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+}
+
 h2 {
     font-family: 'Inter', sans-serif !important;
-    color: #e6edf3 !important;
-    font-size: 1rem !important;
+    color: #ffffff !important;
+    font-size: 1.1rem !important;
     font-weight: 600 !important;
-    margin-top: 1.2rem !important;
-    margin-bottom: 0.3rem !important;
+    margin-top: 1.4rem !important;
+    margin-bottom: 0.4rem !important;
+    border-bottom: 1px solid #1e1e1e !important;
+    padding-bottom: 0.3rem !important;
 }
 
 h3 {
     font-family: 'Inter', sans-serif !important;
-    color: #8b949e !important;
-    font-size: 0.88rem !important;
+    color: #bbbbbb !important;
+    font-size: 0.95rem !important;
     font-weight: 500 !important;
-    margin-top: 0.8rem !important;
+    margin-top: 1rem !important;
     margin-bottom: 0.2rem !important;
 }
 
 p, li {
-    color: #c9d1d9 !important;
-    font-size: 0.91rem !important;
-    line-height: 1.8 !important;
+    color: #cccccc !important;
+    font-size: 0.97rem !important;
+    line-height: 1.85 !important;
     font-weight: 400 !important;
 }
 
 strong {
-    color: #e6edf3 !important;
-    font-weight: 500 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
 }
 
 code {
-    background: #161b22 !important;
-    border: 1px solid #30363d !important;
-    border-radius: 4px !important;
-    padding: 0.1rem 0.4rem !important;
-    font-size: 0.85rem !important;
-    color: #79c0ff !important;
+    background: #111111 !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 5px !important;
+    padding: 0.15rem 0.45rem !important;
+    font-size: 0.87rem !important;
+    color: #aaaaaa !important;
 }
 
 /* ---- SCROLLBAR ---- */
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #21262d; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #222222; border-radius: 10px; }
 
 /* ---- MOBILE ---- */
 
 @media (max-width: 768px) {
 
     .block-container {
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+        padding-left: 1.2rem !important;
+        padding-right: 1.2rem !important;
     }
 
     .app-header h1 {
-        font-size: 1.35rem !important;
+        font-size: 2rem !important;
+    }
+
+    .app-header p {
+        font-size: 0.92rem !important;
     }
 
     .fact-card {
-        padding: 1.3rem 1.4rem;
+        padding: 1.8rem 1.6rem;
+    }
+
+    .fact-card .fact-text {
+        font-size: 1rem !important;
     }
 
     [data-testid="stChatInput"] {
         width: 94% !important;
-        bottom: 14vh !important;
+        bottom: 10vh !important;
     }
 }
 
@@ -273,22 +309,29 @@ if "messages" not in st.session_state:
 
 st.markdown("""
 <div class="app-header">
-    <span class="icon"></span>
-    <h1>Find my Drug</h1>
+    <h1>💊 Find my Drug</h1>
     <p>Search medicines, uses, side effects and substitutes</p>
 </div>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# EMPTY SCREEN — FACT CARD
+# EMPTY SCREEN
 # =====================================================
 
 if len(st.session_state.messages) == 0:
+
     fact_card_html = (
         '<div class="fact-wrapper">'
         '<div class="fact-card">'
         '<span class="fact-label">💡 Did you know</span>'
         '<p class="fact-text">' + random_fact + '</p>'
+        '<div class="suggestions">'
+        '<span class="pill">Paracetamol</span>'
+        '<span class="pill">Ibuprofen</span>'
+        '<span class="pill">Amoxicillin</span>'
+        '<span class="pill">Metformin</span>'
+        '<span class="pill">Omeprazole</span>'
+        '</div>'
         '</div>'
         '</div>'
     )
@@ -306,7 +349,7 @@ for message in st.session_state.messages:
 # CHAT INPUT
 # =====================================================
 
-query = st.chat_input("Ask about a medicine")
+query = st.chat_input("Ask about a medicine, symptom or drug name...")
 
 # =====================================================
 # HANDLE QUERY
