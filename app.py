@@ -33,40 +33,38 @@ medicine_facts = [
 random_fact = random.choice(medicine_facts)
 
 # =====================================================
-# CSS
+# CSS — Clean Claude-style UI
 # =====================================================
 
 st.markdown("""
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
-
-/* ---- ROOT ---- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
 *, *::before, *::after {
     box-sizing: border-box;
 }
 
-/* ---- APP BACKGROUND ---- */
+/* ---- BACKGROUND ---- */
 
 .stApp {
-    background: #080c14;
-    font-family: 'DM Sans', sans-serif;
-    color: #e2e8f0;
+    background: #0d1117;
+    font-family: 'Inter', sans-serif;
+    color: #e6edf3;
 }
 
-/* ---- HIDE STREAMLIT DEFAULT UI ---- */
+/* ---- HIDE STREAMLIT CHROME ---- */
 
 #MainMenu, footer, header {
     visibility: hidden;
 }
 
-/* ---- MAIN CONTAINER ---- */
+/* ---- CONTAINER ---- */
 
 .block-container {
-    max-width: 820px !important;
-    padding-top: 2rem !important;
-    padding-bottom: 6rem !important;
+    max-width: 720px !important;
+    padding-top: 3rem !important;
+    padding-bottom: 2rem !important;
     padding-left: 1.5rem !important;
     padding-right: 1.5rem !important;
 }
@@ -75,44 +73,28 @@ st.markdown("""
 
 .app-header {
     text-align: center;
-    padding: 1.5rem 0 2rem;
+    padding: 2rem 0 2.5rem;
 }
 
-.app-header .pill {
-    display: inline-block;
-    background: rgba(56, 189, 248, 0.12);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    color: #38bdf8;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 0.3rem 1rem;
-    border-radius: 100px;
-    margin-bottom: 1rem;
+.app-header .icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.75rem;
 }
 
 .app-header h1 {
-    font-family: 'Syne', sans-serif !important;
-    font-size: 2.6rem !important;
-    font-weight: 800 !important;
-    color: #f1f5f9 !important;
-    letter-spacing: -1.5px;
-    line-height: 1.15;
-    margin: 0 0 0.6rem !important;
-}
-
-.app-header h1 span {
-    background: linear-gradient(90deg, #38bdf8, #818cf8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 1.6rem !important;
+    font-weight: 600 !important;
+    color: #e6edf3 !important;
+    letter-spacing: -0.4px !important;
+    margin: 0 0 0.5rem !important;
+    line-height: 1.3 !important;
 }
 
 .app-header p {
-    color: #64748b !important;
-    font-size: 0.95rem !important;
+    color: #7d8590 !important;
+    font-size: 0.88rem !important;
     font-weight: 400 !important;
     margin: 0 !important;
     line-height: 1.5 !important;
@@ -124,184 +106,144 @@ st.markdown("""
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 45vh;
+    min-height: 40vh;
     padding: 1rem 0;
 }
 
 .fact-card {
     width: 100%;
-    max-width: 600px;
-    background: linear-gradient(135deg, rgba(56,189,248,0.06) 0%, rgba(129,140,248,0.06) 100%);
-    border: 1px solid rgba(56, 189, 248, 0.15);
-    border-radius: 20px;
-    padding: 2rem 2.2rem;
+    max-width: 560px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1.6rem 2rem;
     text-align: center;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
-    position: relative;
-    overflow: hidden;
-}
-
-.fact-card::before {
-    content: '';
-    position: absolute;
-    top: -60px;
-    right: -60px;
-    width: 180px;
-    height: 180px;
-    background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-}
-
-.fact-card .fact-icon {
-    font-size: 2rem;
-    margin-bottom: 0.8rem;
-    display: block;
 }
 
 .fact-card .fact-label {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #38bdf8;
-    margin-bottom: 0.8rem;
+    color: #7d8590;
+    margin-bottom: 0.75rem;
     display: block;
 }
 
 .fact-card .fact-text {
-    color: #cbd5e1 !important;
-    font-size: 1rem !important;
-    line-height: 1.75 !important;
-    font-weight: 300 !important;
+    color: #c9d1d9 !important;
+    font-size: 0.92rem !important;
+    line-height: 1.7 !important;
+    font-weight: 400 !important;
     margin: 0 !important;
 }
 
 /* ---- CHAT MESSAGES ---- */
 
 [data-testid="stChatMessage"] {
-    background: rgba(255,255,255,0.03) !important;
-    border: 1px solid rgba(255,255,255,0.06) !important;
-    border-radius: 16px !important;
-    padding: 1rem 1.2rem !important;
-    margin-bottom: 0.8rem !important;
-    backdrop-filter: blur(10px);
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0.6rem 0 !important;
+    margin-bottom: 0 !important;
+    border-bottom: 1px solid #21262d !important;
 }
 
 /* ---- CHAT INPUT ---- */
 
 [data-testid="stChatInput"] {
     position: fixed !important;
-    bottom: 25vh !important;
+    bottom: 14vh !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: min(820px, 92%) !important;
-    background: rgba(15, 23, 42, 0.95) !important;
-    backdrop-filter: blur(20px) !important;
-    border-radius: 16px !important;
-    border: 1px solid rgba(56, 189, 248, 0.2) !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+    width: min(720px, 92%) !important;
+    background: #161b22 !important;
+    backdrop-filter: blur(12px) !important;
+    border-radius: 12px !important;
+    border: 1px solid #30363d !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5) !important;
     z-index: 999 !important;
-    padding: 0.4rem !important;
+    padding: 0.3rem !important;
 }
 
 [data-testid="stChatInput"] textarea {
-    color: #e2e8f0 !important;
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 0.95rem !important;
+    color: #e6edf3 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.93rem !important;
     background: transparent !important;
 }
 
 [data-testid="stChatInput"] textarea::placeholder {
-    color: #475569 !important;
+    color: #484f58 !important;
 }
 
-/* ---- TYPOGRAPHY IN RESPONSES ---- */
+/* ---- RESPONSE TYPOGRAPHY ---- */
 
 h2 {
-    font-family: 'Syne', sans-serif !important;
-    color: #38bdf8 !important;
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    margin-top: 1.4rem !important;
-    margin-bottom: 0.4rem !important;
-    letter-spacing: -0.3px;
-}
-
-h3 {
-    font-family: 'Syne', sans-serif !important;
-    color: #818cf8 !important;
-    font-size: 0.95rem !important;
+    font-family: 'Inter', sans-serif !important;
+    color: #e6edf3 !important;
+    font-size: 1rem !important;
     font-weight: 600 !important;
-    margin-top: 1rem !important;
+    margin-top: 1.2rem !important;
     margin-bottom: 0.3rem !important;
 }
 
+h3 {
+    font-family: 'Inter', sans-serif !important;
+    color: #8b949e !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    margin-top: 0.8rem !important;
+    margin-bottom: 0.2rem !important;
+}
+
 p, li {
-    color: #cbd5e1 !important;
-    font-size: 0.93rem !important;
-    line-height: 1.85 !important;
-    font-weight: 300 !important;
+    color: #c9d1d9 !important;
+    font-size: 0.91rem !important;
+    line-height: 1.8 !important;
+    font-weight: 400 !important;
 }
 
 strong {
-    color: #e2e8f0 !important;
+    color: #e6edf3 !important;
     font-weight: 500 !important;
 }
 
-/* ---- SPINNER ---- */
-
-.stSpinner > div {
-    border-top-color: #38bdf8 !important;
+code {
+    background: #161b22 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 4px !important;
+    padding: 0.1rem 0.4rem !important;
+    font-size: 0.85rem !important;
+    color: #79c0ff !important;
 }
 
 /* ---- SCROLLBAR ---- */
 
-::-webkit-scrollbar {
-    width: 4px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #1e293b;
-    border-radius: 10px;
-}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #21262d; border-radius: 10px; }
 
 /* ---- MOBILE ---- */
 
 @media (max-width: 768px) {
 
-    .app-header h1 {
-        font-size: 1.9rem !important;
-        letter-spacing: -1px;
+    .block-container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }
 
-    .app-header p {
-        font-size: 0.85rem !important;
+    .app-header h1 {
+        font-size: 1.35rem !important;
     }
 
     .fact-card {
-        padding: 1.5rem 1.4rem;
-        border-radius: 16px;
-    }
-
-    .fact-card .fact-text {
-        font-size: 0.9rem !important;
+        padding: 1.3rem 1.4rem;
     }
 
     [data-testid="stChatInput"] {
         width: 94% !important;
-        bottom: 25vh !important;
-    }
-
-    .block-container {
-        padding-left: 0.8rem !important;
-        padding-right: 0.8rem !important;
+        bottom: 14vh !important;
     }
 }
 
@@ -331,9 +273,9 @@ if "messages" not in st.session_state:
 
 st.markdown("""
 <div class="app-header">
-    <div class="pill">AI Powered</div>
-    <h1>💊 Medicine <span>Assistant</span></h1>
-    <p>Search medicines, uses, side effects and substitutes instantly</p>
+    <span class="icon">💊</span>
+    <h1>Medicine Assistant</h1>
+    <p>Search medicines, uses, side effects and substitutes</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -345,16 +287,15 @@ if len(st.session_state.messages) == 0:
     fact_card_html = (
         '<div class="fact-wrapper">'
         '<div class="fact-card">'
-        '<span class="fact-icon">🧠</span>'
-        '<span class="fact-label">Did You Know?</span>'
-        '<p class="fact-text">💡 ' + random_fact + '</p>'
+        '<span class="fact-label">💡 Did you know</span>'
+        '<p class="fact-text">' + random_fact + '</p>'
         '</div>'
         '</div>'
     )
     st.markdown(fact_card_html, unsafe_allow_html=True)
 
 # =====================================================
-# DISPLAY CHAT HISTORY
+# CHAT HISTORY
 # =====================================================
 
 for message in st.session_state.messages:
@@ -365,28 +306,25 @@ for message in st.session_state.messages:
 # CHAT INPUT
 # =====================================================
 
-query = st.chat_input("Search a medicine, symptom or drug name...")
+query = st.chat_input("Ask about a medicine, symptom or drug name...")
 
 # =====================================================
-# HANDLE USER QUERY
+# HANDLE QUERY
 # =====================================================
 
 if query:
 
-    # Save & show user message
     st.session_state.messages.append({"role": "user", "content": query})
     with st.chat_message("user"):
         st.markdown(query)
 
-    # Generate & show assistant response
     with st.chat_message("assistant"):
-        with st.spinner("Analyzing medicine..."):
+        with st.spinner("Looking up..."):
             try:
                 result = bot.search_medicine(query)
                 response = bot.format_response(result)
                 st.markdown(response)
                 st.session_state.messages.append({"role": "assistant", "content": response})
-
             except Exception as e:
                 error_msg = f"❌ Something went wrong: {str(e)}"
                 st.error(error_msg)
