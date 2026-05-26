@@ -114,7 +114,7 @@ st.markdown("""
 }
 
 .fact-card .fact-label {
-    font-size: 0.88rem;
+    font-size: 1.1rem;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
