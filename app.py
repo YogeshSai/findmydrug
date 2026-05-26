@@ -1,7 +1,6 @@
 import streamlit as st
 from medicine_bot import MedicineBot
 
-
 # =====================================================
 # PAGE CONFIG
 # =====================================================
@@ -14,230 +13,187 @@ st.set_page_config(
 )
 
 # =====================================================
-# CUSTOM MODERN UI
+# MODERN MOBILE RESPONSIVE UI
 # =====================================================
 
 st.markdown("""
 <style>
 
-/* ---------------------------------------------------
-BACKGROUND
---------------------------------------------------- */
+/* -------------------------------------------------
+GLOBAL
+------------------------------------------------- */
 
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Background */
 .stApp {
     background: linear-gradient(
         180deg,
         #0f172a 0%,
-        #111827 45%,
-        #0b1120 100%
+        #111827 100%
     );
     color: white;
 }
 
-/* ---------------------------------------------------
-HIDE STREAMLIT DEFAULT
---------------------------------------------------- */
-
-#MainMenu {
-    visibility: hidden;
-}
-
-footer {
-    visibility: hidden;
-}
-
+/* Hide Streamlit Branding */
+#MainMenu,
+footer,
 header {
     visibility: hidden;
 }
 
-/* ---------------------------------------------------
-MAIN CONTAINER
---------------------------------------------------- */
-
+/* Main Container */
 .block-container {
-    padding-top: 1.5rem;
-    padding-bottom: 2rem;
     max-width: 850px;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
 }
 
-/* ---------------------------------------------------
-LOGO ICON
---------------------------------------------------- */
-
-.logo-box {
-    width: 80px;
-    height: 80px;
-    margin: auto;
-    border-radius: 22px;
-    background: linear-gradient(
-        135deg,
-        #2563eb,
-        #7c3aed
-    );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    box-shadow: 0 10px 35px rgba(37,99,235,0.35);
-    margin-bottom: 1rem;
-}
-
-/* ---------------------------------------------------
+/* -------------------------------------------------
 TITLE
---------------------------------------------------- */
+------------------------------------------------- */
 
 .main-title {
     text-align: center;
-    font-size: 2.5rem;
+    font-size: 2.3rem;
     font-weight: 800;
+    margin-bottom: 0.4rem;
     color: white;
-    margin-bottom: 0.3rem;
     letter-spacing: -1px;
 }
 
-/* ---------------------------------------------------
-SUBTITLE
---------------------------------------------------- */
-
+/* Subtitle */
 .subtitle {
     text-align: center;
-    color: #cbd5e1;
+    color: #CBD5E1;
     font-size: 1rem;
     margin-bottom: 2rem;
     line-height: 1.6;
 }
 
-/* ---------------------------------------------------
-SEARCH BOX
---------------------------------------------------- */
+/* -------------------------------------------------
+CHAT MESSAGES
+------------------------------------------------- */
 
-.stTextInput > div > div > input {
-    background-color: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: white;
+[data-testid="stChatMessage"] {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 18px;
-    padding: 16px;
-    font-size: 16px;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
     backdrop-filter: blur(10px);
 }
 
-.stTextInput > div > div > input:focus {
-    border: 1px solid #3b82f6;
-    box-shadow: 0 0 0 1px #3b82f6;
+/* User Message */
+[data-testid="stChatMessage"]:has(div[data-testid="chatAvatarIcon-user"]) {
+    background: rgba(37,99,235,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
 }
 
-/* ---------------------------------------------------
-BUTTON
---------------------------------------------------- */
-
-.stButton button {
-    width: 100%;
-    height: 3.2rem;
-    border-radius: 18px;
-    border: none;
-    background: linear-gradient(
-        135deg,
-        #2563eb,
-        #7c3aed
-    );
-    color: white;
-    font-size: 1rem;
-    font-weight: 700;
-    transition: 0.3s ease;
-    box-shadow: 0 10px 25px rgba(37,99,235,0.25);
-}
-
-.stButton button:hover {
-    transform: translateY(-2px);
-}
-
-/* ---------------------------------------------------
-RESULT CARD
---------------------------------------------------- */
-
-.result-card {
+/* Assistant Message */
+[data-testid="stChatMessage"]:has(div[data-testid="chatAvatarIcon-assistant"]) {
     background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(14px);
+}
+
+/* -------------------------------------------------
+CHAT INPUT
+------------------------------------------------- */
+
+[data-testid="stChatInput"] {
+    position: fixed;
+    bottom: 0.8rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(850px, 95%);
+    background: rgba(17,24,39,0.92);
+    backdrop-filter: blur(12px);
+    padding: 0.6rem;
+    border-radius: 20px;
     border: 1px solid rgba(255,255,255,0.08);
-    padding: 1.5rem;
-    border-radius: 24px;
-    margin-top: 1.5rem;
-    color: white;
-    box-shadow: 0 10px 35px rgba(0,0,0,0.25);
-    overflow-wrap: break-word;
+    z-index: 999;
 }
 
-/* ---------------------------------------------------
-HEADINGS
---------------------------------------------------- */
-
-.result-card h1 {
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
+/* Input Box */
+[data-testid="stChatInput"] textarea {
+    color: white !important;
+    font-size: 16px !important;
 }
 
-.result-card h2 {
-    margin-top: 1.4rem;
-    font-size: 1.2rem;
-    color: #93c5fd;
+/* -------------------------------------------------
+HEADINGS INSIDE RESPONSE
+------------------------------------------------- */
+
+h1 {
+    font-size: 1.7rem !important;
+    color: white !important;
 }
 
-/* ---------------------------------------------------
-TEXT
---------------------------------------------------- */
-
-.result-card p,
-.result-card li {
-    color: #e5e7eb;
-    line-height: 1.7;
-    font-size: 0.96rem;
+h2 {
+    font-size: 1.1rem !important;
+    color: #93C5FD !important;
+    margin-top: 1.3rem !important;
 }
 
-/* ---------------------------------------------------
-FOOTER
---------------------------------------------------- */
-
-.footer {
-    text-align: center;
-    color: #94a3b8;
-    margin-top: 2rem;
-    font-size: 0.8rem;
+/* Text */
+p, li {
+    color: #E5E7EB !important;
+    line-height: 1.7 !important;
+    font-size: 0.95rem !important;
 }
 
-/* ---------------------------------------------------
+/* -------------------------------------------------
+SCROLLBAR
+------------------------------------------------- */
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 10px;
+}
+
+/* -------------------------------------------------
 MOBILE
---------------------------------------------------- */
+------------------------------------------------- */
 
 @media (max-width: 768px) {
 
     .main-title {
-        font-size: 2rem;
+        font-size: 1.8rem;
+        line-height: 1.3;
     }
 
     .subtitle {
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         margin-bottom: 1.4rem;
     }
 
-    .logo-box {
-        width: 68px;
-        height: 68px;
-        font-size: 2rem;
-    }
-
     .block-container {
-        padding-top: 1rem;
         padding-left: 0.7rem;
         padding-right: 0.7rem;
+        padding-bottom: 7rem;
     }
 
-    .result-card {
-        padding: 1rem;
+    [data-testid="stChatInput"] {
+        width: 96%;
+        bottom: 0.5rem;
         border-radius: 18px;
     }
 
-    .stButton button {
-        height: 3rem;
+    h1 {
+        font-size: 1.4rem !important;
+    }
+
+    h2 {
+        font-size: 1rem !important;
+    }
+
+    p, li {
+        font-size: 0.9rem !important;
     }
 }
 
@@ -245,29 +201,8 @@ MOBILE
 """, unsafe_allow_html=True)
 
 # =====================================================
-# LOAD BOT
+# HEADER
 # =====================================================
-
-@st.cache_resource
-def load_bot():
-
-    return MedicineBot()
-
-
-bot = load_bot()
-
-# =====================================================
-# HERO SECTION
-# =====================================================
-
-st.markdown(
-    """
-    <div class="logo-box">
-        💊
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
 st.markdown(
     """
@@ -281,79 +216,88 @@ st.markdown(
 st.markdown(
     """
     <div class="subtitle">
-        AI-powered medicine assistant for uses, side effects, substitutes and composition insights
+        Search medicines and get uses, side effects and substitutes instantly
     </div>
     """,
     unsafe_allow_html=True
 )
 
 # =====================================================
-# SEARCH INPUT
+# LOAD BOT
 # =====================================================
 
-query = st.text_input(
-    label="Medicine Search",
-    placeholder="Search medicine... Example: Dolo 650",
-    label_visibility="collapsed"
+@st.cache_resource
+def load_bot():
+    return MedicineBot()
+
+bot = load_bot()
+
+# =====================================================
+# SESSION STATE
+# =====================================================
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# =====================================================
+# DISPLAY CHAT HISTORY
+# =====================================================
+
+for message in st.session_state.messages:
+
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# =====================================================
+# CHAT INPUT
+# =====================================================
+
+query = st.chat_input(
+    "Enter medicine name..."
 )
 
 # =====================================================
-# SEARCH BUTTON
+# HANDLE USER INPUT
 # =====================================================
 
-search_clicked = st.button(
-    "🔍 Search Medicine"
-)
+if query:
 
-# =====================================================
-# SEARCH LOGIC
-# =====================================================
+    # Store User Message
+    st.session_state.messages.append({
+        "role": "user",
+        "content": query
+    })
 
-if search_clicked:
+    # Show User Message
+    with st.chat_message("user"):
+        st.markdown(query)
 
-    if query.strip():
+    # Assistant Response
+    with st.chat_message("assistant"):
 
-        with st.spinner("Analyzing medicine..."):
+        with st.spinner("Searching medicine..."):
 
             try:
 
-                # SEARCH
                 result = bot.search_medicine(query)
 
-                # FORMAT RESPONSE
                 response = bot.format_response(result)
 
-                # SHOW RESULT
-                st.markdown(
-                    f"""
-                    <div class="result-card">
-                    {response}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                st.markdown(response)
+
+                # Store Assistant Response
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": response
+                })
 
             except Exception as e:
 
-                st.error(
-                    f"Error: {str(e)}"
-                )
+                error_message = f"❌ Error: {str(e)}"
 
-    else:
+                st.error(error_message)
 
-        st.warning(
-            "Please enter a medicine name"
-        )
-
-# =====================================================
-# FOOTER
-# =====================================================
-
-st.markdown(
-    """
-    <div class="footer">
-        ⚠️ Informational purposes only. Always consult a healthcare professional.
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": error_message
+                })
