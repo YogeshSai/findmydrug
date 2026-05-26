@@ -7,7 +7,7 @@ import random
 # =====================================================
 
 st.set_page_config(
-    page_title="Find my drug",
+    page_title="AI Medicine Assistant",
     page_icon="💊",
     layout="centered",
     initial_sidebar_state="collapsed"
@@ -194,7 +194,7 @@ st.markdown("""
 
 [data-testid="stChatInput"] {
     position: fixed !important;
-    bottom: 1.5rem !important;
+    bottom: 25vh !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: min(820px, 92%) !important;
@@ -296,7 +296,7 @@ strong {
 
     [data-testid="stChatInput"] {
         width: 94% !important;
-        bottom: 1rem !important;
+        bottom: 25vh !important;
     }
 
     .block-container {
@@ -332,7 +332,7 @@ if "messages" not in st.session_state:
 st.markdown("""
 <div class="app-header">
     <div class="pill">AI Powered</div>
-    <h1>Find my Drug</span></h1>
+    <h1>💊 Medicine <span>Assistant</span></h1>
     <p>Search medicines, uses, side effects and substitutes instantly</p>
 </div>
 """, unsafe_allow_html=True)
@@ -365,7 +365,7 @@ for message in st.session_state.messages:
 # CHAT INPUT
 # =====================================================
 
-query = st.chat_input("Search a medicine")
+query = st.chat_input("Search a medicine, symptom or drug name...")
 
 # =====================================================
 # HANDLE USER QUERY
