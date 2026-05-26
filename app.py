@@ -7,7 +7,7 @@ import random
 # =====================================================
 
 st.set_page_config(
-    page_title="Find my Drug",
+    page_title="AI Medicine Assistant",
     page_icon="💊",
     layout="centered",
     initial_sidebar_state="collapsed"
@@ -21,59 +21,71 @@ medicine_facts = [
 
     "💡 Did you know? Paracetamol is one of the most commonly used medicines worldwide.",
 
-    "💡 Antibiotics do not work against viral infections like the common cold.",
-
-    "💡 Always complete your prescribed antibiotic course even if you feel better.",
-
-    "💡 Taking medicines with food can reduce stomach irritation for some drugs.",
-
-    "💡 Overusing painkillers may affect liver or kidney health.",
-
-    "💡 Store medicines away from direct sunlight and moisture.",
+    "💡 Antibiotics do not work against viral infections like cold and flu.",
 
     "💡 Generic medicines contain the same active ingredients as branded medicines.",
 
-    "💡 Some medicines can interact with caffeine or alcohol.",
+    "💡 Some medicines work better when taken after food.",
 
-    "💡 Never self-medicate antibiotics without medical advice.",
+    "💡 Painkillers should not be overused without medical advice.",
 
-    "💡 Expired medicines may lose effectiveness over time."
+    "💡 Always complete your antibiotic course even if you feel better.",
+
+    "💡 Medicines should be stored away from sunlight and moisture.",
+
+    "💡 Expired medicines may lose effectiveness over time.",
+
+    "💡 Certain medicines can interact with caffeine or alcohol.",
+
+    "💡 Self-medication can sometimes worsen symptoms."
 ]
 
 random_fact = random.choice(medicine_facts)
 
 # =====================================================
-# CUSTOM UI
+# MODERN UI CSS
 # =====================================================
 
 st.markdown("""
 <style>
 
 /* -------------------------------------------------
-BACKGROUND
+APP BACKGROUND
 ------------------------------------------------- */
 
 .stApp {
+
     background: linear-gradient(
         180deg,
         #0f172a 0%,
         #111827 100%
     );
+
     color: white;
 }
 
-/* Hide Streamlit */
+/* -------------------------------------------------
+HIDE STREAMLIT DEFAULT UI
+------------------------------------------------- */
+
 #MainMenu,
 footer,
 header {
+
     visibility: hidden;
 }
 
-/* Main Container */
+/* -------------------------------------------------
+MAIN CONTAINER
+------------------------------------------------- */
+
 .block-container {
+
     max-width: 850px;
+
     padding-top: 1rem;
-    padding-bottom: 3rem;
+
+    padding-bottom: 2rem;
 }
 
 /* -------------------------------------------------
@@ -81,31 +93,52 @@ TITLE
 ------------------------------------------------- */
 
 .main-title {
-    text-align: center;
-    font-size: 2.4rem;
-    font-weight: 800;
-    color: white;
-    margin-top: 1rem;
-    margin-bottom: 0.4rem;
-}
 
-/* Subtitle */
-.subtitle {
     text-align: center;
-    color: #CBD5E1;
-    font-size: 1rem;
-    margin-bottom: 2rem;
+
+    font-size: 2.5rem;
+
+    font-weight: 800;
+
+    color: white;
+
+    margin-top: 1rem;
+
+    margin-bottom: 0.4rem;
+
+    letter-spacing: -1px;
 }
 
 /* -------------------------------------------------
-CENTER CONTENT
+SUBTITLE
 ------------------------------------------------- */
 
-.center-container {
-    min-height: 58vh;
+.subtitle {
+
+    text-align: center;
+
+    color: #CBD5E1;
+
+    font-size: 1rem;
+
+    margin-bottom: 0;
+}
+
+/* -------------------------------------------------
+EMPTY SCREEN AREA
+------------------------------------------------- */
+
+.empty-screen {
+
+    height: 62vh;
+
     display: flex;
+
     flex-direction: column;
+
     justify-content: center;
+
+    align-items: center;
 }
 
 /* -------------------------------------------------
@@ -113,17 +146,45 @@ FACT CARD
 ------------------------------------------------- */
 
 .fact-card {
-    background: rgba(255,255,255,0.05);
+
+    width: 100%;
+
+    max-width: 650px;
+
+    background: rgba(255,255,255,0.06);
+
     border: 1px solid rgba(255,255,255,0.08);
-    padding: 1rem;
-    border-radius: 18px;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+
+    padding: 1.5rem;
+
+    border-radius: 24px;
+
     text-align: center;
+
     color: #E2E8F0;
-    line-height: 1.7;
-    backdrop-filter: blur(10px);
-    font-size: 0.95rem;
+
+    line-height: 1.9;
+
+    font-size: 1rem;
+
+    backdrop-filter: blur(14px);
+
+    box-shadow: 0 10px 35px rgba(0,0,0,0.25);
+}
+
+/* -------------------------------------------------
+FACT TITLE
+------------------------------------------------- */
+
+.fact-title {
+
+    color: white;
+
+    font-size: 1.2rem;
+
+    font-weight: 700;
+
+    margin-bottom: 1rem;
 }
 
 /* -------------------------------------------------
@@ -131,22 +192,38 @@ CHAT INPUT
 ------------------------------------------------- */
 
 [data-testid="stChatInput"] {
+
     position: fixed;
-    bottom: 1.2rem;
+
+    bottom: 16vh;
+
     left: 50%;
+
     transform: translateX(-50%);
+
     width: min(850px, 92%);
-    background: rgba(17,24,39,0.92);
+
+    background: rgba(17,24,39,0.94);
+
     backdrop-filter: blur(12px);
-    padding: 0.6rem;
+
+    padding: 0.7rem;
+
     border-radius: 22px;
+
     border: 1px solid rgba(255,255,255,0.08);
+
     z-index: 999;
 }
 
-/* Chat Input Text */
+/* -------------------------------------------------
+CHAT INPUT TEXT
+------------------------------------------------- */
+
 [data-testid="stChatInput"] textarea {
+
     color: white !important;
+
     font-size: 16px !important;
 }
 
@@ -155,11 +232,18 @@ CHAT MESSAGE
 ------------------------------------------------- */
 
 [data-testid="stChatMessage"] {
+
     background: rgba(255,255,255,0.05);
-    border-radius: 18px;
+
+    border-radius: 20px;
+
     padding: 1rem;
+
     margin-bottom: 1rem;
+
     border: 1px solid rgba(255,255,255,0.08);
+
+    backdrop-filter: blur(10px);
 }
 
 /* -------------------------------------------------
@@ -167,11 +251,15 @@ HEADINGS
 ------------------------------------------------- */
 
 h1 {
+
     color: white !important;
 }
 
 h2 {
+
     color: #93C5FD !important;
+
+    margin-top: 1.4rem !important;
 }
 
 /* -------------------------------------------------
@@ -179,44 +267,81 @@ TEXT
 ------------------------------------------------- */
 
 p, li {
+
     color: #E5E7EB !important;
-    line-height: 1.7;
+
+    line-height: 1.8;
+
+    font-size: 0.95rem;
 }
 
 /* -------------------------------------------------
-MOBILE
+SCROLLBAR
+------------------------------------------------- */
+
+::-webkit-scrollbar {
+
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+
+    background: #374151;
+
+    border-radius: 10px;
+}
+
+/* -------------------------------------------------
+MOBILE RESPONSIVE
 ------------------------------------------------- */
 
 @media (max-width: 768px) {
 
     .main-title {
-        font-size: 1.8rem;
+
+        font-size: 1.9rem;
+
         line-height: 1.3;
     }
 
     .subtitle {
-        font-size: 0.88rem;
+
+        font-size: 0.9rem;
     }
 
-    .center-container {
-        min-height: 52vh;
+    .empty-screen {
+
+        height: 55vh;
     }
 
     .fact-card {
-        font-size: 0.88rem;
-        padding: 0.9rem;
-        border-radius: 16px;
+
+        font-size: 0.92rem;
+
+        padding: 1.2rem;
+
+        border-radius: 18px;
     }
 
     [data-testid="stChatInput"] {
+
         width: 94%;
-        bottom: 1rem;
+
+        bottom: 13vh;
+
         border-radius: 18px;
     }
 
     .block-container {
+
         padding-left: 0.7rem;
+
         padding-right: 0.7rem;
+    }
+
+    p, li {
+
+        font-size: 0.9rem;
     }
 }
 
@@ -229,7 +354,9 @@ MOBILE
 
 @st.cache_resource
 def load_bot():
+
     return MedicineBot()
+
 
 bot = load_bot()
 
@@ -238,6 +365,7 @@ bot = load_bot()
 # =====================================================
 
 if "messages" not in st.session_state:
+
     st.session_state.messages = []
 
 # =====================================================
@@ -247,7 +375,7 @@ if "messages" not in st.session_state:
 st.markdown(
     """
     <div class="main-title">
-        Find my Drug
+        💊 AI Medicine Assistant
     </div>
     """,
     unsafe_allow_html=True
@@ -263,27 +391,27 @@ st.markdown(
 )
 
 # =====================================================
-# EMPTY SCREEN CENTER LAYOUT
+# EMPTY SCREEN
 # =====================================================
 
 if len(st.session_state.messages) == 0:
 
     st.markdown(
-        '<div class="center-container">',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
         f"""
-        <div class="fact-card">
-            {random_fact}
+        <div class="empty-screen">
+
+            <div class="fact-card">
+
+                <div class="fact-title">
+                    🧠 Did You Know?
+                </div>
+
+                {random_fact}
+
+            </div>
+
         </div>
         """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '</div>',
         unsafe_allow_html=True
     )
 
@@ -294,6 +422,7 @@ if len(st.session_state.messages) == 0:
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
+
         st.markdown(message["content"])
 
 # =====================================================
@@ -305,32 +434,43 @@ query = st.chat_input(
 )
 
 # =====================================================
-# HANDLE INPUT
+# HANDLE USER QUERY
 # =====================================================
 
 if query:
 
-    # User Message
+    # USER MESSAGE
+
     st.session_state.messages.append({
         "role": "user",
         "content": query
     })
 
     with st.chat_message("user"):
+
         st.markdown(query)
 
-    # Assistant Message
+    # ASSISTANT MESSAGE
+
     with st.chat_message("assistant"):
 
         with st.spinner("Analyzing medicine..."):
 
             try:
 
+                # SEARCH
+
                 result = bot.search_medicine(query)
+
+                # FORMAT RESPONSE
 
                 response = bot.format_response(result)
 
+                # SHOW RESPONSE
+
                 st.markdown(response)
+
+                # SAVE RESPONSE
 
                 st.session_state.messages.append({
                     "role": "assistant",
