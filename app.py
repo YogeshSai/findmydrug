@@ -1,5 +1,6 @@
 import streamlit as st
 from medicine_bot import MedicineBot
+import random
 
 # =====================================================
 # PAGE CONFIG
@@ -13,21 +14,45 @@ st.set_page_config(
 )
 
 # =====================================================
-# MODERN MOBILE RESPONSIVE UI
+# MEDICINE FACTS
+# =====================================================
+
+medicine_facts = [
+
+    "💡 Did you know? Paracetamol is one of the most commonly used medicines worldwide.",
+
+    "💡 Antibiotics do not work against viral infections like the common cold.",
+
+    "💡 Always complete your prescribed antibiotic course even if you feel better.",
+
+    "💡 Taking medicines with food can reduce stomach irritation for some drugs.",
+
+    "💡 Overusing painkillers may affect liver or kidney health.",
+
+    "💡 Store medicines away from direct sunlight and moisture.",
+
+    "💡 Generic medicines contain the same active ingredients as branded medicines.",
+
+    "💡 Some medicines can interact with caffeine or alcohol.",
+
+    "💡 Never self-medicate antibiotics without medical advice.",
+
+    "💡 Expired medicines may lose effectiveness over time."
+]
+
+random_fact = random.choice(medicine_facts)
+
+# =====================================================
+# CUSTOM UI
 # =====================================================
 
 st.markdown("""
 <style>
 
 /* -------------------------------------------------
-GLOBAL
+BACKGROUND
 ------------------------------------------------- */
 
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-}
-
-/* Background */
 .stApp {
     background: linear-gradient(
         180deg,
@@ -37,7 +62,7 @@ html, body, [class*="css"] {
     color: white;
 }
 
-/* Hide Streamlit Branding */
+/* Hide Streamlit */
 #MainMenu,
 footer,
 header {
@@ -48,7 +73,7 @@ header {
 .block-container {
     max-width: 850px;
     padding-top: 1rem;
-    padding-bottom: 2rem;
+    padding-bottom: 3rem;
 }
 
 /* -------------------------------------------------
@@ -57,11 +82,11 @@ TITLE
 
 .main-title {
     text-align: center;
-    font-size: 2.3rem;
+    font-size: 2.4rem;
     font-weight: 800;
-    margin-bottom: 0.4rem;
     color: white;
-    letter-spacing: -1px;
+    margin-top: 1rem;
+    margin-bottom: 0.4rem;
 }
 
 /* Subtitle */
@@ -70,31 +95,35 @@ TITLE
     color: #CBD5E1;
     font-size: 1rem;
     margin-bottom: 2rem;
-    line-height: 1.6;
 }
 
 /* -------------------------------------------------
-CHAT MESSAGES
+CENTER CONTENT
 ------------------------------------------------- */
 
-[data-testid="stChatMessage"] {
+.center-container {
+    min-height: 58vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* -------------------------------------------------
+FACT CARD
+------------------------------------------------- */
+
+.fact-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
+    padding: 1rem;
     border-radius: 18px;
-    padding: 0.8rem;
+    margin-top: 1rem;
     margin-bottom: 1rem;
+    text-align: center;
+    color: #E2E8F0;
+    line-height: 1.7;
     backdrop-filter: blur(10px);
-}
-
-/* User Message */
-[data-testid="stChatMessage"]:has(div[data-testid="chatAvatarIcon-user"]) {
-    background: rgba(37,99,235,0.12);
-    border: 1px solid rgba(59,130,246,0.25);
-}
-
-/* Assistant Message */
-[data-testid="stChatMessage"]:has(div[data-testid="chatAvatarIcon-assistant"]) {
-    background: rgba(255,255,255,0.06);
+    font-size: 0.95rem;
 }
 
 /* -------------------------------------------------
@@ -103,57 +132,55 @@ CHAT INPUT
 
 [data-testid="stChatInput"] {
     position: fixed;
-    bottom: 0.8rem;
+    bottom: 1.2rem;
     left: 50%;
     transform: translateX(-50%);
-    width: min(850px, 95%);
+    width: min(850px, 92%);
     background: rgba(17,24,39,0.92);
     backdrop-filter: blur(12px);
     padding: 0.6rem;
-    border-radius: 20px;
+    border-radius: 22px;
     border: 1px solid rgba(255,255,255,0.08);
     z-index: 999;
 }
 
-/* Input Box */
+/* Chat Input Text */
 [data-testid="stChatInput"] textarea {
     color: white !important;
     font-size: 16px !important;
 }
 
 /* -------------------------------------------------
-HEADINGS INSIDE RESPONSE
+CHAT MESSAGE
+------------------------------------------------- */
+
+[data-testid="stChatMessage"] {
+    background: rgba(255,255,255,0.05);
+    border-radius: 18px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* -------------------------------------------------
+HEADINGS
 ------------------------------------------------- */
 
 h1 {
-    font-size: 1.7rem !important;
     color: white !important;
 }
 
 h2 {
-    font-size: 1.1rem !important;
     color: #93C5FD !important;
-    margin-top: 1.3rem !important;
-}
-
-/* Text */
-p, li {
-    color: #E5E7EB !important;
-    line-height: 1.7 !important;
-    font-size: 0.95rem !important;
 }
 
 /* -------------------------------------------------
-SCROLLBAR
+TEXT
 ------------------------------------------------- */
 
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #374151;
-    border-radius: 10px;
+p, li {
+    color: #E5E7EB !important;
+    line-height: 1.7;
 }
 
 /* -------------------------------------------------
@@ -169,58 +196,32 @@ MOBILE
 
     .subtitle {
         font-size: 0.88rem;
-        margin-bottom: 1.4rem;
+    }
+
+    .center-container {
+        min-height: 52vh;
+    }
+
+    .fact-card {
+        font-size: 0.88rem;
+        padding: 0.9rem;
+        border-radius: 16px;
+    }
+
+    [data-testid="stChatInput"] {
+        width: 94%;
+        bottom: 1rem;
+        border-radius: 18px;
     }
 
     .block-container {
         padding-left: 0.7rem;
         padding-right: 0.7rem;
-        padding-bottom: 7rem;
-    }
-
-    [data-testid="stChatInput"] {
-        width: 96%;
-        bottom: 0.5rem;
-        border-radius: 18px;
-    }
-
-    h1 {
-        font-size: 1.4rem !important;
-    }
-
-    h2 {
-        font-size: 1rem !important;
-    }
-
-    p, li {
-        font-size: 0.9rem !important;
     }
 }
 
 </style>
 """, unsafe_allow_html=True)
-
-# =====================================================
-# HEADER
-# =====================================================
-
-st.markdown(
-    """
-    <div class="main-title">
-        Find my Drug
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <div class="subtitle">
-        Search medicines and get uses, side effects and substitutes instantly
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
 # =====================================================
 # LOAD BOT
@@ -240,6 +241,53 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # =====================================================
+# HEADER
+# =====================================================
+
+st.markdown(
+    """
+    <div class="main-title">
+        Find my Drug
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    """
+    <div class="subtitle">
+        Search medicines, uses, side effects and substitutes instantly
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# =====================================================
+# EMPTY SCREEN CENTER LAYOUT
+# =====================================================
+
+if len(st.session_state.messages) == 0:
+
+    st.markdown(
+        '<div class="center-container">',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        f"""
+        <div class="fact-card">
+            {random_fact}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+# =====================================================
 # DISPLAY CHAT HISTORY
 # =====================================================
 
@@ -253,29 +301,28 @@ for message in st.session_state.messages:
 # =====================================================
 
 query = st.chat_input(
-    "Enter medicine name..."
+    "Search medicine..."
 )
 
 # =====================================================
-# HANDLE USER INPUT
+# HANDLE INPUT
 # =====================================================
 
 if query:
 
-    # Store User Message
+    # User Message
     st.session_state.messages.append({
         "role": "user",
         "content": query
     })
 
-    # Show User Message
     with st.chat_message("user"):
         st.markdown(query)
 
-    # Assistant Response
+    # Assistant Message
     with st.chat_message("assistant"):
 
-        with st.spinner("Searching medicine..."):
+        with st.spinner("Analyzing medicine..."):
 
             try:
 
@@ -285,7 +332,6 @@ if query:
 
                 st.markdown(response)
 
-                # Store Assistant Response
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": response
