@@ -14,13 +14,30 @@ st.set_page_config(
 )
 
 # =====================================================
-# CUSTOM CSS
+# CUSTOM MODERN UI
 # =====================================================
 
 st.markdown("""
 <style>
 
-/* Hide Streamlit Branding */
+/* ---------------------------------------------------
+BACKGROUND
+--------------------------------------------------- */
+
+.stApp {
+    background: linear-gradient(
+        180deg,
+        #0f172a 0%,
+        #111827 45%,
+        #0b1120 100%
+    );
+    color: white;
+}
+
+/* ---------------------------------------------------
+HIDE STREAMLIT DEFAULT
+--------------------------------------------------- */
+
 #MainMenu {
     visibility: hidden;
 }
@@ -33,96 +50,194 @@ header {
     visibility: hidden;
 }
 
-/* Main Container */
+/* ---------------------------------------------------
+MAIN CONTAINER
+--------------------------------------------------- */
+
 .block-container {
-    padding-top: 0.5rem;
+    padding-top: 1.5rem;
     padding-bottom: 2rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
     max-width: 850px;
 }
 
-/* Main Title */
+/* ---------------------------------------------------
+LOGO ICON
+--------------------------------------------------- */
+
+.logo-box {
+    width: 80px;
+    height: 80px;
+    margin: auto;
+    border-radius: 22px;
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #7c3aed
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    box-shadow: 0 10px 35px rgba(37,99,235,0.35);
+    margin-bottom: 1rem;
+}
+
+/* ---------------------------------------------------
+TITLE
+--------------------------------------------------- */
+
 .main-title {
     text-align: center;
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin-top: 0rem;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
     margin-bottom: 0.3rem;
-    line-height: 1.2;
-    word-wrap: break-word;
+    letter-spacing: -1px;
 }
 
-/* Subtitle */
+/* ---------------------------------------------------
+SUBTITLE
+--------------------------------------------------- */
+
 .subtitle {
     text-align: center;
-    color: #9CA3AF;
-    font-size: 0.95rem;
-    margin-bottom: 1.8rem;
-    line-height: 1.5;
+    color: #cbd5e1;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
 }
 
-/* Search Input */
-.stTextInput input {
-    border-radius: 14px;
-    padding: 14px;
+/* ---------------------------------------------------
+SEARCH BOX
+--------------------------------------------------- */
+
+.stTextInput > div > div > input {
+    background-color: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: white;
+    border-radius: 18px;
+    padding: 16px;
     font-size: 16px;
-    border: 1px solid #374151;
+    backdrop-filter: blur(10px);
 }
 
-/* Button */
+.stTextInput > div > div > input:focus {
+    border: 1px solid #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* ---------------------------------------------------
+BUTTON
+--------------------------------------------------- */
+
 .stButton button {
     width: 100%;
-    border-radius: 14px;
-    height: 3rem;
-    font-size: 1rem;
-    font-weight: 600;
+    height: 3.2rem;
+    border-radius: 18px;
     border: none;
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #7c3aed
+    );
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: 0.3s ease;
+    box-shadow: 0 10px 25px rgba(37,99,235,0.25);
 }
 
-/* Result Card */
+.stButton button:hover {
+    transform: translateY(-2px);
+}
+
+/* ---------------------------------------------------
+RESULT CARD
+--------------------------------------------------- */
+
 .result-card {
-    background-color: #111827;
-    padding: 1.2rem;
-    border-radius: 18px;
-    margin-top: 1rem;
-    border: 1px solid #1F2937;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 1.5rem;
+    border-radius: 24px;
+    margin-top: 1.5rem;
+    color: white;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.25);
     overflow-wrap: break-word;
 }
 
-/* Scroll Fix */
-html, body, [class*="css"] {
-    overflow-x: hidden;
+/* ---------------------------------------------------
+HEADINGS
+--------------------------------------------------- */
+
+.result-card h1 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
 }
 
-/* Mobile Responsive */
+.result-card h2 {
+    margin-top: 1.4rem;
+    font-size: 1.2rem;
+    color: #93c5fd;
+}
+
+/* ---------------------------------------------------
+TEXT
+--------------------------------------------------- */
+
+.result-card p,
+.result-card li {
+    color: #e5e7eb;
+    line-height: 1.7;
+    font-size: 0.96rem;
+}
+
+/* ---------------------------------------------------
+FOOTER
+--------------------------------------------------- */
+
+.footer {
+    text-align: center;
+    color: #94a3b8;
+    margin-top: 2rem;
+    font-size: 0.8rem;
+}
+
+/* ---------------------------------------------------
+MOBILE
+--------------------------------------------------- */
+
 @media (max-width: 768px) {
 
     .main-title {
-        font-size: 1.6rem;
-        margin-top: 0rem;
-        padding-top: 0rem;
+        font-size: 2rem;
     }
 
     .subtitle {
-        font-size: 0.82rem;
-        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        margin-bottom: 1.4rem;
+    }
+
+    .logo-box {
+        width: 68px;
+        height: 68px;
+        font-size: 2rem;
     }
 
     .block-container {
-        padding-top: 0.2rem;
+        padding-top: 1rem;
         padding-left: 0.7rem;
         padding-right: 0.7rem;
     }
 
-    .stButton button {
-        height: 2.8rem;
-        font-size: 0.95rem;
+    .result-card {
+        padding: 1rem;
+        border-radius: 18px;
     }
 
-    .result-card {
-        padding: 0.9rem;
-        border-radius: 14px;
+    .stButton button {
+        height: 3rem;
     }
 }
 
@@ -142,13 +257,22 @@ def load_bot():
 bot = load_bot()
 
 # =====================================================
-# HEADER
+# HERO SECTION
 # =====================================================
 
 st.markdown(
     """
+    <div class="logo-box">
+        💊
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    """
     <div class="main-title">
-        Find my Drug💊
+        Find my Drug
     </div>
     """,
     unsafe_allow_html=True
@@ -157,7 +281,7 @@ st.markdown(
 st.markdown(
     """
     <div class="subtitle">
-        Search medicines, substitutes, side effects and composition instantly
+        AI-powered medicine assistant for uses, side effects, substitutes and composition insights
     </div>
     """,
     unsafe_allow_html=True
@@ -168,8 +292,8 @@ st.markdown(
 # =====================================================
 
 query = st.text_input(
-    label="Medicine Name",
-    placeholder="Example: Dolo 650",
+    label="Medicine Search",
+    placeholder="Search medicine... Example: Dolo 650",
     label_visibility="collapsed"
 )
 
@@ -178,37 +302,28 @@ query = st.text_input(
 # =====================================================
 
 search_clicked = st.button(
-    "Search Medicine"
+    "🔍 Search Medicine"
 )
 
 # =====================================================
-# SEARCH ACTION
+# SEARCH LOGIC
 # =====================================================
 
 if search_clicked:
 
     if query.strip():
 
-        with st.spinner("Searching medicine..."):
+        with st.spinner("Analyzing medicine..."):
 
             try:
 
-                # -----------------------------------------
-                # SEARCH MEDICINE
-                # -----------------------------------------
-
+                # SEARCH
                 result = bot.search_medicine(query)
 
-                # -----------------------------------------
                 # FORMAT RESPONSE
-                # -----------------------------------------
-
                 response = bot.format_response(result)
 
-                # -----------------------------------------
-                # DISPLAY RESULT
-                # -----------------------------------------
-
+                # SHOW RESULT
                 st.markdown(
                     f"""
                     <div class="result-card">
@@ -234,8 +349,11 @@ if search_clicked:
 # FOOTER
 # =====================================================
 
-st.markdown("---")
-
-st.caption(
-    "⚠️ This chatbot is for informational purposes only and should not replace professional medical advice."
+st.markdown(
+    """
+    <div class="footer">
+        ⚠️ Informational purposes only. Always consult a healthcare professional.
+    </div>
+    """,
+    unsafe_allow_html=True
 )
