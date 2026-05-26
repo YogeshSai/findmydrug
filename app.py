@@ -146,7 +146,7 @@ st.markdown("""
 
 [data-testid="stChatInput"] {
     position: fixed !important;
-    bottom: 10vh !important;
+    bottom: 8vh !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: min(760px, 92%) !important;
