@@ -19,15 +19,13 @@
 
 ## 🌿 About
 
-**FindMyDrug** is an AI-powered chatbot built specifically for the Indian pharmaceutical landscape. It lets users search, query, and learn about medicines using natural language — backed by a massive dataset of 2 lakh+ drugs and augmented by large language model intelligence.
-
-Whether you're a patient, caregiver, pharmacist, or healthcare professional, FindMyDrug bridges the gap between complex drug data and accessible, conversational answers.
+**FindMyDrug** is an AI-powered chatbot built specifically for the Indian pharmaceutical landscape. It lets users search, query, and learn about medicines with just one single message — backed by a massive dataset of 2 lakh+ drugs and augmented by large language model intelligence.
 
 ---
 
 ## ✨ Features
 
-- 🔍 **Natural Language Drug Search** — Ask questions like *"What is Paracetamol used for?"* or *"Side effects of Metformin?"*
+- 🔍 **Natural Language Drug Search** — Search for medicines like *"Paracetamol"*
 - 🧠 **AI-Powered Responses** — Grok AI at the backend delivers accurate, context-aware answers
 - 📦 **2,00,000+ Drug Database** — Comprehensive Indian pharmaceutical dataset covering generics, branded drugs, compositions, and more
 - 🤗 **Hugging Face Integration** — LLM data enhancement for richer, more nuanced responses
@@ -53,7 +51,7 @@ Whether you're a patient, caregiver, pharmacist, or healthcare professional, Fin
 ### Prerequisites
 
 - Python 3.8+
-- pip
+- pip install -r requirements.text
 
 ### Installation
 
