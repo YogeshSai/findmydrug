@@ -1,5 +1,6 @@
 import re
 import zipfile
+from typing import List, Optional
 
 import pandas as pd
 import streamlit as st
@@ -33,9 +34,6 @@ Medicine Name:
 
 Salts / Composition:
 {salts}
-
-Uses:
-{uses}
 
 Instructions:
 - Explain what the medicine is and mention common uses
@@ -118,7 +116,7 @@ class MedicineBot:
     # =====================================================
 
     @staticmethod
-    def _clean_text(text: str) -> str:
+    def _clean_text(text: str) -> str:  # type: ignore[return]
 
         if not text or pd.isna(text):
             return ""
@@ -132,7 +130,7 @@ class MedicineBot:
     # =====================================================
 
     @staticmethod
-    def _extract_strength(text: str) -> str | None:
+    def _extract_strength(text: str) -> Optional[str]:
 
         m = STRENGTH_PATTERN.search(str(text))
 
@@ -142,7 +140,7 @@ class MedicineBot:
     # SEARCH MEDICINE
     # =====================================================
 
-    def search_medicine(self, query: str) -> pd.Series | None:
+    def search_medicine(self, query: str) -> Optional[pd.Series]:
 
         query_clean    = self._clean_text(query)
         query_strength = self._extract_strength(query)
@@ -199,7 +197,7 @@ class MedicineBot:
     # =====================================================
 
     @staticmethod
-    def _get_values(row: pd.Series, keyword: str) -> list[str]:
+    def _get_values(row: pd.Series, keyword: str) -> List[str]:
 
         keyword_lower = keyword.lower()
 
@@ -232,8 +230,8 @@ class MedicineBot:
     def _generate_ai_summary(
         self,
         medicine_name: str,
-        salts: list[str],
-        uses: list[str],
+        salts: List[str],
+        uses: List[str],
     ) -> str:
 
         prompt = AI_PROMPT_TEMPLATE.format(
@@ -260,7 +258,7 @@ class MedicineBot:
     # FORMAT RESPONSE
     # =====================================================
 
-    def format_response(self, row: pd.Series | None) -> str:
+    def format_response(self, row: Optional[pd.Series]) -> str:
 
         if row is None:
             return (
