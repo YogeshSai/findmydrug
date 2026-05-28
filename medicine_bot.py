@@ -96,7 +96,12 @@ class MedicineBot:
             "oral suspension",
             "injection",
             "mg",
-            "ml"
+            "ml",
+            "uses",
+            "what",
+            "are",
+            "the"
+            "?"
         ]
 
         for word in remove_words:
@@ -320,8 +325,6 @@ Side Effects:
 Instructions:
 - Explain what the medicine is
 - Mention what the salts do
-- Mention common uses
-- Mention important side effects
 - Keep it short
 - Avoid difficult medical jargon
 - Make it easy to understand
