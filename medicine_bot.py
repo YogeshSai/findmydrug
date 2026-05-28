@@ -114,35 +114,75 @@ class MedicineBot:
 
         return None
 
-    # =====================================================
-    # AI MEDICINE EXTRACTION
-    # =====================================================
+# =====================================================
+# EXTRACT MEDICINE NAME
+# =====================================================
 
-    def extract_medicine_name(self, query):
+def extract_medicine_name(self, query):
 
-        try:
+    """
+    Extract medicine name from natural language query.
+    """
 
-            prompt = f"""
-You are a medicine name extraction AI.
+    try:
 
-Your task:
-Extract ONLY the medicine name from the user query.
+        # -------------------------------------------------
+        # AI PROMPT
+        # -------------------------------------------------
+
+        prompt = f"""
+You are an expert medicine extraction AI.
+
+Your ONLY task:
+Extract the medicine name from the user query.
+
+STRICT RULES:
+- Return ONLY medicine name
+- Keep dosage if present
+- NEVER return sentences
+- NEVER return explanation
+- NEVER return words like:
+  what
+  are
+  uses
+  used
+  for
+  tablet
+  capsule
+  medicine
+  drug
+  tell
+  about
+  can
+  i
+  use
 
 IMPORTANT:
-- User MUST mention a medicine name
-- If user only mentions symptoms or disease,
-  return NONE
+- If user does NOT mention a medicine,
+  return ONLY:
+  NONE
 
-Examples:
+GOOD EXAMPLES:
 
-User: What is dolo 650 used for
+User: What are the uses of Dolo 650?
 Output: dolo 650
 
-User: Tell me about azithromycin
-Output: azithromycin
+User: Tell me about Crocin tablet
+Output: crocin
 
-User: Can I use frisium tablet
+User: Can I use Azithromycin 500?
+Output: azithromycin 500
+
+User: Frisium uses
 Output: frisium
+
+User: Zerodol SP tablet
+Output: zerodol sp
+
+BAD EXAMPLES:
+
+User: What are the uses of Dolo 650?
+Output: at tablet
 
 User: I have fever
 Output: NONE
@@ -150,48 +190,122 @@ Output: NONE
 User: Medicine for headache
 Output: NONE
 
-User: What should I take for cough
-Output: NONE
-
-Return ONLY the medicine name.
-No explanation.
-No punctuation.
-
 User Query:
 {query}
+
+Medicine Name:
 """
 
-            completion = self.client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                temperature=0,
-                max_tokens=20
-            )
+        # -------------------------------------------------
+        # GROQ CALL
+        # -------------------------------------------------
 
-            medicine = (
-                completion
-                .choices[0]
-                .message
-                .content
-                .strip()
-                .lower()
-            )
+        completion = self.client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0,
+            max_tokens=20
+        )
 
-            if medicine == "none":
-                return None
+        medicine = (
+            completion
+            .choices[0]
+            .message
+            .content
+            .strip()
+            .lower()
+        )
 
-            return medicine
+        print("🤖 Raw AI Output:", medicine)
 
-        except Exception as e:
+        # -------------------------------------------------
+        # REMOVE SYMBOLS
+        # -------------------------------------------------
 
-            print("❌ AI Extraction Error:", e)
+        medicine = re.sub(
+            r"[^a-zA-Z0-9\s]",
+            " ",
+            medicine
+        )
 
+        # -------------------------------------------------
+        # REMOVE INVALID WORDS
+        # -------------------------------------------------
+
+        remove_words = [
+
+            "what",
+            "are",
+            "uses",
+            "used",
+            "for",
+            "tablet",
+            "tablets",
+            "capsule",
+            "capsules",
+            "medicine",
+            "drug",
+            "tell",
+            "about",
+            "can",
+            "use",
+            "the",
+            "this",
+            "is",
+            "at"
+
+        ]
+
+        words = medicine.split()
+
+        cleaned_words = [
+
+            word for word in words
+            if word not in remove_words
+
+        ]
+
+        medicine = " ".join(cleaned_words)
+
+        # -------------------------------------------------
+        # REMOVE EXTRA SPACES
+        # -------------------------------------------------
+
+        medicine = re.sub(
+            r"\s+",
+            " ",
+            medicine
+        ).strip()
+
+        # -------------------------------------------------
+        # INVALID OUTPUT CHECK
+        # -------------------------------------------------
+
+        if medicine == "":
             return None
+
+        if medicine.lower() == "none":
+            return None
+
+        # Reject very short garbage outputs
+
+        if len(medicine) <= 2:
+            return None
+
+        print("✅ Final Extracted Medicine:", medicine)
+
+        return medicine
+
+    except Exception as e:
+
+        print("❌ AI Extraction Error:", e)
+
+        return None
 
     # =====================================================
     # SEARCH MEDICINE
