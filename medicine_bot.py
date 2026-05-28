@@ -48,7 +48,7 @@ class MedicineBot:
         # -------------------------------------------------
 
         self.client = Groq(
-        api_key=st.secrets["GROQ_API_KEY"]
+            api_key=st.secrets["GROQ_API_KEY"]
         )
 
         print("✅ MedicineBot Ready\n")
@@ -74,90 +74,90 @@ class MedicineBot:
 
         return df
 
-# =====================================================
-# CLEAN TEXT
-# =====================================================
+    # =====================================================
+    # CLEAN TEXT
+    # =====================================================
 
-def clean_text(self, text):
+    def clean_text(self, text):
 
-    if pd.isna(text):
-        return ""
+        if pd.isna(text):
+            return ""
 
-    text = str(text).lower().strip()
+        text = str(text).lower().strip()
 
-    # -------------------------------------------------
-    # REMOVE QUESTION PHRASES
-    # -------------------------------------------------
+        # -------------------------------------------------
+        # REMOVE QUESTION PHRASES
+        # -------------------------------------------------
 
-    question_patterns = [
-        "what is",
-        "used for",
-        "tell me about",
-        "about",
-        "can i use",
-        "how to use",
-        "side effects of",
-        "uses of",
-        "benefits of",
-        "for what",
-        "why use",
-        "medicine for",
-    ]
+        question_patterns = [
+            "what is",
+            "used for",
+            "tell me about",
+            "about",
+            "can i use",
+            "how to use",
+            "side effects of",
+            "uses of",
+            "benefits of",
+            "for what",
+            "why use",
+            "medicine for",
+        ]
 
-    for pattern in question_patterns:
+        for pattern in question_patterns:
 
-        text = re.sub(
-            rf"\b{pattern}\b",
-            "",
-            text,
-            flags=re.IGNORECASE
-        )
+            text = re.sub(
+                rf"\b{pattern}\b",
+                "",
+                text,
+                flags=re.IGNORECASE
+            )
 
-    # -------------------------------------------------
-    # REMOVE SYMBOLS
-    # -------------------------------------------------
-
-    text = re.sub(
-        r"[^a-zA-Z0-9\s]",
-        " ",
-        text
-    )
-
-    # -------------------------------------------------
-    # REMOVE COMMON MEDICINE WORDS
-    # -------------------------------------------------
-
-    remove_words = [
-        "tablet",
-        "tablets",
-        "tab",
-        "capsule",
-        "capsules",
-        "cap",
-        "syrup",
-        "oral",
-        "suspension",
-        "injection",
-        "mg",
-        "ml"
-    ]
-
-    for word in remove_words:
+        # -------------------------------------------------
+        # REMOVE SYMBOLS
+        # -------------------------------------------------
 
         text = re.sub(
-            rf"\b{word}\b",
-            "",
+            r"[^a-zA-Z0-9\s]",
+            " ",
             text
         )
 
-    # -------------------------------------------------
-    # REMOVE EXTRA SPACES
-    # -------------------------------------------------
+        # -------------------------------------------------
+        # REMOVE COMMON MEDICINE WORDS
+        # -------------------------------------------------
 
-    text = re.sub(r"\s+", " ", text)
+        remove_words = [
+            "tablet",
+            "tablets",
+            "tab",
+            "capsule",
+            "capsules",
+            "cap",
+            "syrup",
+            "oral",
+            "suspension",
+            "injection",
+            "mg",
+            "ml"
+        ]
 
-    return text.strip()
-    
+        for word in remove_words:
+
+            text = re.sub(
+                rf"\b{word}\b",
+                "",
+                text
+            )
+
+        # -------------------------------------------------
+        # REMOVE EXTRA SPACES
+        # -------------------------------------------------
+
+        text = re.sub(r"\s+", " ", text)
+
+        return text.strip()
+        
     # =====================================================
     # EXTRACT STRENGTH
     # =====================================================
@@ -177,131 +177,86 @@ def clean_text(self, text):
         return None
 
     # =====================================================
-    # SEARCH MEDICINE
+    # SEARCH MEDICINE (UPDATED TO WORD-BY-WORD BREAKDOWN)
     # =====================================================
 
     def search_medicine(self, query):
 
-        query_clean = self.clean_text(query)
+        # Extract strength from the overall query to use for dosage matching bonus
+        query_strength = self.extract_strength(query)
+        
+        # Clean the sentence and break it down into independent words
+        cleaned_query = self.clean_text(query)
+        words = [w for w in cleaned_query.split(" ") if w.strip()]
 
-        print(f"\n🔍 Searching for: {query_clean}")
+        print(f"\n📝 Parsed search terms from sentence: {words}")
 
-        query_strength = (
-            self.extract_strength(query)
-        )
+        # Check each word sequentially until a valid medicine match is found
+        for query_clean in words:
+            
+            # Skip short words or single letters that pass through the filter (e.g. "a", "i")
+            if len(query_clean) <= 1:
+                continue
 
-        # -------------------------------------------------
-        # EXACT MATCH
-        # -------------------------------------------------
+            print(f"🔍 Testing word: '{query_clean}'")
 
-        exact_match = self.df[
-            self.df["search_name"]
-            .apply(self.clean_text) == query_clean
-        ]
+            # 1. EXACT MATCH
+            exact_match = self.df[
+                self.df["search_name"].apply(self.clean_text) == query_clean
+            ]
+            if not exact_match.empty:
+                print(f"✅ Exact Match Found for '{query_clean}'")
+                return exact_match.iloc[0]
 
-        if not exact_match.empty:
+            # 2. STARTS WITH MATCH
+            starts_match = self.df[
+                self.df["search_name"]
+                .apply(self.clean_text)
+                .str.startswith(query_clean)
+            ]
+            if not starts_match.empty:
+                print(f"✅ Starts-With Match Found for '{query_clean}'")
+                return starts_match.iloc[0]
 
-            print("✅ Exact Match Found")
+            # 3. CONTAINS MATCH
+            contains_match = self.df[
+                self.df["search_name"]
+                .apply(self.clean_text)
+                .str.contains(query_clean, na=False)
+            ]
+            if not contains_match.empty:
+                print(f"✅ Contains Match Found for '{query_clean}'")
+                return contains_match.iloc[0]
 
-            return exact_match.iloc[0]
+            # 4. FUZZY MATCH
+            best_match = None
+            best_score = 0
 
-        # -------------------------------------------------
-        # STARTS WITH MATCH
-        # -------------------------------------------------
+            for _, row in self.df.iterrows():
+                medicine_name = row["search_name"]
+                cleaned_name = self.clean_text(medicine_name)
 
-        starts_match = self.df[
-            self.df["search_name"]
-            .apply(self.clean_text)
-            .str.startswith(query_clean)
-        ]
+                score = fuzz.token_sort_ratio(query_clean, cleaned_name)
 
-        if not starts_match.empty:
+                # Dosage match bonus
+                med_strength = self.extract_strength(medicine_name)
+                if query_strength and med_strength:
+                    if query_strength == med_strength:
+                        score += 10
+                    else:
+                        score -= 20
 
-            print("✅ Starts-With Match Found")
+                if score > best_score:
+                    best_score = score
+                    best_match = row
 
-            return starts_match.iloc[0]
-
-        # -------------------------------------------------
-        # CONTAINS MATCH
-        # -------------------------------------------------
-
-        contains_match = self.df[
-            self.df["search_name"]
-            .apply(self.clean_text)
-            .str.contains(query_clean, na=False)
-        ]
-
-        if not contains_match.empty:
-
-            print("✅ Contains Match Found")
-
-            return contains_match.iloc[0]
-
-        # -------------------------------------------------
-        # FUZZY MATCH
-        # -------------------------------------------------
-
-        best_match = None
-        best_score = 0
-
-        for _, row in self.df.iterrows():
-
-            medicine_name = row["search_name"]
-
-            cleaned_name = self.clean_text(
-                medicine_name
-            )
-
-            score = fuzz.token_sort_ratio(
-                query_clean,
-                cleaned_name
-            )
-
-            # ---------------------------------------------
-            # DOSAGE MATCH BONUS
-            # ---------------------------------------------
-
-            med_strength = (
-                self.extract_strength(
-                    medicine_name
-                )
-            )
-
-            if (
-                query_strength
-                and med_strength
-            ):
-
-                if query_strength == med_strength:
-                    score += 10
-
-                else:
-                    score -= 20
-
-            # ---------------------------------------------
-            # SAVE BEST MATCH
-            # ---------------------------------------------
-
-            if score > best_score:
-
-                best_score = score
-                best_match = row
-
-        # -------------------------------------------------
-        # FINAL RESULT
-        # -------------------------------------------------
-
-        if best_match is not None:
-
-            print("\n🔍 Closest Match Found")
-            print("Medicine:", best_match["name"])
-            print("Score:", best_score)
-
-            if best_score >= 60:
+            if best_match is not None and best_score >= 60:
+                print(f"\n🔍 Closest Fuzzy Match Found for '{query_clean}'")
+                print("Medicine:", best_match["name"])
+                print("Score:", best_score)
                 return best_match
 
-        print("❌ No Match Found")
-
+        print("❌ No Match Found for any word in the sentence.")
         return None
 
     # =====================================================
@@ -338,21 +293,21 @@ def clean_text(self, text):
 
         return values
 
-# =====================================================
-# GENERATE AI SUMMARY
-# =====================================================
+    # =====================================================
+    # GENERATE AI SUMMARY
+    # =====================================================
 
-def generate_ai_summary(
-    self,
-    medicine_name,
-    salts,
-    uses,
-    side_effects
-):
+    def generate_ai_summary(
+        self,
+        medicine_name,
+        salts,
+        uses,
+        side_effects
+    ):
 
-    try:
+        try:
 
-        prompt = f"""
+            prompt = f"""
 You are a medicine assistant.
 
 Medicine:
@@ -384,53 +339,53 @@ STRICT RULES:
   - "side effects include"
 """
 
-        completion = (
-            self.client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                temperature=0.1,
-                max_tokens=120
-            )
-        )
-
-        summary = (
-            completion
-            .choices[0]
-            .message
-            .content
-        )
-
-        unwanted_phrases = [
-            "Common Uses",
-            "Important Side Effects",
-            "Side Effects",
-            "Uses",
-            "You can use",
-            "used for",
-            "helps with",
-            "side effects include"
-        ]
-
-        for phrase in unwanted_phrases:
-            summary = re.sub(
-                phrase,
-                "",
-                summary,
-                flags=re.IGNORECASE
+            completion = (
+                self.client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    temperature=0.1,
+                    max_tokens=120
+                )
             )
 
-        return summary.strip()
+            summary = (
+                completion
+                .choices[0]
+                .message
+                .content
+            )
 
-    except Exception as e:
+            unwanted_phrases = [
+                "Common Uses",
+                "Important Side Effects",
+                "Side Effects",
+                "Uses",
+                "You can use",
+                "used for",
+                "helps with",
+                "side effects include"
+            ]
 
-        print("❌ Groq Error:", e)
+            for phrase in unwanted_phrases:
+                summary = re.sub(
+                    phrase,
+                    "",
+                    summary,
+                    flags=re.IGNORECASE
+                )
 
-        return "AI Summary Unavailable."
+            return summary.strip()
+
+        except Exception as e:
+
+            print("❌ Groq Error:", e)
+
+            return "AI Summary Unavailable."
 
     # =====================================================
     # FORMAT RESPONSE
@@ -500,9 +455,7 @@ Try searching:
 
         ai_summary = self.generate_ai_summary(
             medicine_name,
-            salts,
-            uses,
-            side_effects
+            salts
         )
 
         # -------------------------------------------------
@@ -538,7 +491,7 @@ Try searching:
         # -------------------------------------------------
 
         response = f"""
-# 💊 {medicine_name}
+# {medicine_name}
 
 ## 🧠 AI Summary
 {ai_summary}
