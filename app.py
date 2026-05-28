@@ -75,10 +75,9 @@ MAIN CONTAINER
     padding-right: 1rem !important;
 
     /*
-    IMPORTANT
-    Prevents content from hiding behind searchbox
+    Prevent content hiding behind searchbox
     */
-    padding-bottom: 220px !important;
+    padding-bottom: 240px !important;
 }
 
 /* =====================================================
@@ -259,6 +258,19 @@ strong {
 }
 
 /* =====================================================
+SCROLLBAR
+===================================================== */
+
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #222222;
+    border-radius: 20px;
+}
+
+/* =====================================================
 MOBILE
 ===================================================== */
 
@@ -270,7 +282,7 @@ MOBILE
 
         padding-right: 0.8rem !important;
 
-        padding-bottom: 240px !important;
+        padding-bottom: 260px !important;
     }
 
     .app-title {
@@ -322,17 +334,16 @@ if "messages" not in st.session_state:
 # HEADER
 # =====================================================
 
-st.markdown(
-    """
-    <div class="app-header">
-        <div class="app-title">FindMyDrug</div>
-        <div class="app-subtitle">
-            Search medicines, uses, side effects and substitutes
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
+header_html = (
+    '<div class="app-header">'
+        '<div class="app-title">FindMyDrug</div>'
+        '<div class="app-subtitle">'
+            'Search medicines, uses, side effects and substitutes'
+        '</div>'
+    '</div>'
 )
+
+st.markdown(header_html, unsafe_allow_html=True)
 
 # =====================================================
 # EMPTY SCREEN
@@ -340,26 +351,16 @@ st.markdown(
 
 if len(st.session_state.messages) == 0:
 
-    st.markdown(
-        f"""
-        <div class="fact-wrapper">
-
-            <div class="fact-card">
-
-                <div class="fact-label">
-                    💡 DID YOU KNOW
-                </div>
-
-                <div class="fact-text">
-                    {random_fact}
-                </div>
-
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
+    fact_html = (
+        '<div class="fact-wrapper">'
+            '<div class="fact-card">'
+                '<div class="fact-label">💡 DID YOU KNOW</div>'
+                f'<div class="fact-text">{random_fact}</div>'
+            '</div>'
+        '</div>'
     )
+
+    st.markdown(fact_html, unsafe_allow_html=True)
 
 # =====================================================
 # CHAT HISTORY
