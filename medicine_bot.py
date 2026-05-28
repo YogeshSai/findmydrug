@@ -300,8 +300,7 @@ class MedicineBot:
     def generate_ai_summary(
         self,
         medicine_name,
-        salts,
-        uses
+        salts
     ):
 
         try:
@@ -310,7 +309,7 @@ class MedicineBot:
 You are a medicine assistant.
 
 Medicine:
-{medicine_name}, {uses}
+{medicine_name}
 
 Composition:
 {salts}
