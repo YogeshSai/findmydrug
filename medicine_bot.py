@@ -300,8 +300,6 @@ class MedicineBot:
         self,
         medicine_name,
         salts,
-        uses,
-        side_effects
     ):
 
         try:
@@ -420,9 +418,7 @@ Try searching:
 
         ai_summary = self.generate_ai_summary(
             medicine_name,
-            salts,
-            uses,
-            side_effects
+            salts
         )
 
         # -------------------------------------------------
