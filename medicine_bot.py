@@ -300,7 +300,8 @@ class MedicineBot:
     def generate_ai_summary(
         self,
         medicine_name,
-        salts
+        salts,
+        uses
     ):
 
         try:
@@ -309,7 +310,7 @@ class MedicineBot:
 You are a medicine assistant.
 
 Medicine:
-{medicine_name}
+{medicine_name}, {uses}
 
 Composition:
 {salts}
@@ -319,17 +320,6 @@ STRICT RULES:
 - ONLY explain what the salts are
 - Keep response within 3-4 lines
 - Use simple language
-- DO NOT mention:
-  - uses
-  - common uses
-  - side effects
-  - important side effects
-  - symptoms
-  - dosage
-  - warnings
-  - precautions
-- DO NOT create headings
-- DO NOT create bullet points
 - DO NOT say:
   - "you can use"
   - "used for"
@@ -358,16 +348,6 @@ STRICT RULES:
                 .content
             )
 
-            unwanted_phrases = [
-                "Common Uses",
-                "Important Side Effects",
-                "Side Effects",
-                "Uses",
-                "You can use",
-                "used for",
-                "helps with",
-                "side effects include"
-            ]
 
             for phrase in unwanted_phrases:
                 summary = re.sub(
