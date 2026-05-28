@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 from medicine_bot import MedicineBot
 import random
@@ -14,7 +15,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# MEDICINE FACTS
+# FACTS
 # =====================================================
 
 medicine_facts = [
@@ -33,10 +34,10 @@ medicine_facts = [
 random_fact = random.choice(medicine_facts)
 
 # =====================================================
-# CUSTOM CSS
+# CSS
 # =====================================================
 
-custom_css = """
+st.markdown("""
 <style>
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -50,8 +51,8 @@ APP
 ===================================================== */
 
 .stApp {
-    background-color: #000000;
-    color: #ffffff;
+    background: #000000;
+    color: white;
 }
 
 #MainMenu,
@@ -69,11 +70,14 @@ MAIN CONTAINER
     max-width: 760px !important;
 
     padding-top: 1rem !important;
+
     padding-left: 1rem !important;
+
     padding-right: 1rem !important;
 
     /*
-    Prevent content hiding behind searchbox
+    IMPORTANT
+    Prevents content from hiding behind searchbox
     */
     padding-bottom: 220px !important;
 }
@@ -106,7 +110,7 @@ HEADER
 
 .app-subtitle {
 
-    color: #7d7d7d;
+    color: #808080;
 
     font-size: 1rem;
 
@@ -123,9 +127,9 @@ FACT CARD
 
     display: flex;
 
-    justify-content: center;
-
     align-items: center;
+
+    justify-content: center;
 }
 
 .fact-card {
@@ -134,7 +138,7 @@ FACT CARD
 
     background: #111111;
 
-    border: 1px solid #1e1e1e;
+    border: 1px solid #1f1f1f;
 
     border-radius: 20px;
 
@@ -143,7 +147,7 @@ FACT CARD
 
 .fact-label {
 
-    color: #5d5d5d;
+    color: #666666;
 
     font-size: 0.78rem;
 
@@ -158,13 +162,11 @@ FACT CARD
 
 .fact-text {
 
-    color: #e0e0e0;
+    color: #e2e2e2;
 
     font-size: 1.35rem;
 
     line-height: 1.9;
-
-    font-weight: 400;
 }
 
 /* =====================================================
@@ -192,9 +194,6 @@ SEARCH BOX
 
     position: fixed !important;
 
-    /*
-    1 cm above bottom
-    */
     bottom: 1cm !important;
 
     left: 50% !important;
@@ -205,7 +204,7 @@ SEARCH BOX
 
     background: #111111 !important;
 
-    border: 1px solid #252525 !important;
+    border: 1px solid #262626 !important;
 
     border-radius: 18px !important;
 
@@ -213,7 +212,7 @@ SEARCH BOX
 
     z-index: 999999 !important;
 
-    box-shadow: 0px -5px 30px rgba(0,0,0,0.65) !important;
+    box-shadow: 0px -5px 25px rgba(0,0,0,0.65) !important;
 }
 
 /* INPUT */
@@ -245,8 +244,6 @@ h2 {
     border-bottom: 1px solid #1d1d1d;
 
     padding-bottom: 0.4rem;
-
-    margin-top: 1.4rem !important;
 }
 
 p, li {
@@ -260,30 +257,6 @@ p, li {
 
 strong {
     color: white !important;
-}
-
-code {
-
-    background: #111111 !important;
-
-    border: 1px solid #222222 !important;
-
-    border-radius: 6px !important;
-
-    padding: 0.15rem 0.4rem !important;
-}
-
-/* =====================================================
-SCROLLBAR
-===================================================== */
-
-::-webkit-scrollbar {
-    width: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #222222;
-    border-radius: 20px;
 }
 
 /* =====================================================
@@ -304,11 +277,6 @@ MOBILE
     .app-title {
 
         font-size: 2rem;
-    }
-
-    .app-subtitle {
-
-        font-size: 0.92rem;
     }
 
     .fact-card {
@@ -332,9 +300,7 @@ MOBILE
 }
 
 </style>
-"""
-
-st.markdown(custom_css, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # =====================================================
 # LOAD BOT
@@ -357,21 +323,17 @@ if "messages" not in st.session_state:
 # HEADER
 # =====================================================
 
-header_html = """
-<div class="app-header">
-
-    <div class="app-title">
-        FindMyDrug
+st.markdown(
+    """
+    <div class="app-header">
+        <div class="app-title">FindMyDrug</div>
+        <div class="app-subtitle">
+            Search medicines, uses, side effects and substitutes
+        </div>
     </div>
-
-    <div class="app-subtitle">
-        Search medicines, uses, side effects and substitutes
-    </div>
-
-</div>
-"""
-
-st.markdown(header_html, unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
 # =====================================================
 # EMPTY SCREEN
@@ -379,25 +341,26 @@ st.markdown(header_html, unsafe_allow_html=True)
 
 if len(st.session_state.messages) == 0:
 
-    fact_html = f"""
-    <div class="fact-wrapper">
+    st.markdown(
+        f"""
+        <div class="fact-wrapper">
 
-        <div class="fact-card">
+            <div class="fact-card">
 
-            <div class="fact-label">
-                💡 DID YOU KNOW
-            </div>
+                <div class="fact-label">
+                    💡 DID YOU KNOW
+                </div>
 
-            <div class="fact-text">
-                {random_fact}
+                <div class="fact-text">
+                    {random_fact}
+                </div>
+
             </div>
 
         </div>
-
-    </div>
-    """
-
-    st.markdown(fact_html, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True
+    )
 
 # =====================================================
 # CHAT HISTORY
@@ -421,8 +384,6 @@ query = st.chat_input("Ask about a medicine...")
 
 if query:
 
-    # USER MESSAGE
-
     st.session_state.messages.append({
         "role": "user",
         "content": query
@@ -431,8 +392,6 @@ if query:
     with st.chat_message("user"):
 
         st.markdown(query)
-
-    # ASSISTANT MESSAGE
 
     with st.chat_message("assistant"):
 
@@ -461,3 +420,4 @@ if query:
                     "role": "assistant",
                     "content": error_message
                 })
+```
