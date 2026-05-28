@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 from medicine_bot import MedicineBot
 import random
 
@@ -8,14 +7,14 @@ import random
 # =====================================================
 
 st.set_page_config(
-    page_title="Find my Drug",
+    page_title="FindMyDrug",
     page_icon="💊",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
 # =====================================================
-# MEDICINE FACTS
+# FACTS
 # =====================================================
 
 medicine_facts = [
@@ -42,14 +41,13 @@ st.markdown("""
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-*, *::before, *::after {
-    box-sizing: border-box;
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
 }
 
 .stApp {
-    background: #000000;
-    font-family: 'Inter', sans-serif;
-    color: #ffffff;
+    background-color: #000000;
+    color: white;
 }
 
 #MainMenu, footer, header {
@@ -58,258 +56,202 @@ st.markdown("""
 
 .block-container {
     max-width: 760px !important;
-    padding-top: 0 !important;
-    padding-bottom: 2rem !important;
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
+    padding-top: 1rem !important;
+    padding-left: 1.2rem !important;
+    padding-right: 1.2rem !important;
+
+    /* IMPORTANT */
+    padding-bottom: 160px !important;
 }
 
-/* ---- HEADER ---- */
+/* =====================================================
+HEADER
+===================================================== */
 
 .app-header {
     text-align: center;
-    padding: 3.5rem 0 1.5rem;
+    padding-top: 2rem;
+    padding-bottom: 1rem;
 }
 
-.app-header h1 {
-    font-size: 2.8rem !important;
-    font-weight: 900 !important;
-    color: #ffffff !important;
-    letter-spacing: -1px !important;
-    margin: 0 0 0.6rem !important;
-    line-height: 1.2 !important;
+.app-title {
+    font-size: 2.7rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
 }
 
-.app-header p {
-    color: #888888 !important;
-    font-size: 1.05rem !important;
-    font-weight: 400 !important;
-    margin: 0 !important;
-    line-height: 1.6 !important;
+.app-subtitle {
+    color: #8a8a8a;
+    font-size: 1rem;
 }
 
-/* ---- FACT CARD ---- */
+/* =====================================================
+FACT CARD
+===================================================== */
 
-.fact-wrapper {
+.fact-container {
+    min-height: 45vh;
+
     display: flex;
-    justify-content: center;
     align-items: center;
-    min-height: 44vh;
-    padding: 1rem 0;
+    justify-content: center;
 }
 
 .fact-card {
     width: 100%;
-    max-width: 620px;
     background: #111111;
-    border: 1px solid #222222;
-    border-radius: 16px;
-    padding: 2.4rem 2.8rem;
+    border: 1px solid #1f1f1f;
+    border-radius: 18px;
+    padding: 2rem;
     text-align: center;
 }
 
-.fact-card .fact-label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
+.fact-title {
+    color: #666666;
     text-transform: uppercase;
-    color: #555555;
+    letter-spacing: 2px;
+    font-size: 0.75rem;
     margin-bottom: 1rem;
-    display: block;
+    font-weight: 600;
 }
 
-.fact-card .fact-text {
-    color: #dddddd !important;
-    font-size: 1.45rem !important;
-    line-height: 1.9 !important;
-    font-weight: 400 !important;
-    margin: 0 !important;
+.fact-text {
+    color: #e0e0e0;
+    font-size: 1.35rem;
+    line-height: 1.8;
+    font-weight: 400;
 }
 
-/* ---- CHAT MESSAGES ---- */
+/* =====================================================
+CHAT MESSAGES
+===================================================== */
 
 [data-testid="stChatMessage"] {
     background: transparent !important;
     border: none !important;
-    border-radius: 0 !important;
-    padding: 1.2rem 0 !important;
-    margin-bottom: 0 !important;
-    border-bottom: 1px solid #1a1a1a !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    border-bottom: 1px solid #141414 !important;
 }
 
-/* ---- CHAT INPUT — hidden/shown via JS ---- */
+/* =====================================================
+FIXED INPUT BOX
+===================================================== */
 
 [data-testid="stChatInput"] {
     position: fixed !important;
-    bottom: 6vh !important;
+    bottom: 18px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: min(760px, 92%) !important;
+
+    width: min(760px, calc(100% - 24px)) !important;
+
     background: #111111 !important;
-    border-radius: 14px !important;
-    border: 1px solid #2a2a2a !important;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.8) !important;
-    z-index: 999 !important;
-    padding: 0.4rem !important;
-    transition: opacity 0.3s ease, transform 0.3s ease !important;
+    border: 1px solid #262626 !important;
+    border-radius: 16px !important;
+
+    padding: 0.45rem !important;
+
+    z-index: 999999 !important;
+
+    box-shadow: 0 -4px 25px rgba(0,0,0,0.6) !important;
 }
 
-[data-testid="stChatInput"].hide-bar {
-    opacity: 0 !important;
-    pointer-events: none !important;
-    transform: translateX(-50%) translateY(20px) !important;
-}
+/* Input area */
 
 [data-testid="stChatInput"] textarea {
-    color: #ffffff !important;
-    font-family: 'Inter', sans-serif !important;
-    font-size: 1rem !important;
+    color: white !important;
     background: transparent !important;
+    font-size: 1rem !important;
 }
 
 [data-testid="stChatInput"] textarea::placeholder {
-    color: #444444 !important;
+    color: #5f5f5f !important;
 }
 
-/* ---- RESPONSE TYPOGRAPHY ---- */
+/* =====================================================
+MARKDOWN STYLING
+===================================================== */
 
-h1 {
-    color: #ffffff !important;
-    font-size: 1.5rem !important;
-    font-weight: 600 !important;
+h1, h2, h3 {
+    color: white !important;
 }
 
 h2 {
-    font-family: 'Inter', sans-serif !important;
-    color: #ffffff !important;
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    margin-top: 1.4rem !important;
-    margin-bottom: 0.4rem !important;
-    border-bottom: 1px solid #1e1e1e !important;
-    padding-bottom: 0.3rem !important;
-}
-
-h3 {
-    font-family: 'Inter', sans-serif !important;
-    color: #bbbbbb !important;
-    font-size: 0.95rem !important;
-    font-weight: 500 !important;
-    margin-top: 1rem !important;
-    margin-bottom: 0.2rem !important;
+    border-bottom: 1px solid #1c1c1c;
+    padding-bottom: 0.35rem;
 }
 
 p, li {
-    color: #cccccc !important;
-    font-size: 0.97rem !important;
-    line-height: 1.85 !important;
-    font-weight: 400 !important;
+    color: #d0d0d0 !important;
+    line-height: 1.8 !important;
+    font-size: 0.98rem !important;
 }
 
 strong {
-    color: #ffffff !important;
-    font-weight: 600 !important;
+    color: white !important;
 }
 
 code {
     background: #111111 !important;
-    border: 1px solid #2a2a2a !important;
-    border-radius: 5px !important;
-    padding: 0.15rem 0.45rem !important;
-    font-size: 0.87rem !important;
-    color: #aaaaaa !important;
+    border: 1px solid #222222 !important;
+    padding: 0.15rem 0.4rem !important;
+    border-radius: 6px !important;
 }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #222222; border-radius: 10px; }
+/* =====================================================
+SCROLLBAR
+===================================================== */
+
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #222222;
+    border-radius: 10px;
+}
+
+/* =====================================================
+MOBILE
+===================================================== */
 
 @media (max-width: 768px) {
+
     .block-container {
-        padding-left: 1.2rem !important;
-        padding-right: 1.2rem !important;
+        padding-left: 0.9rem !important;
+        padding-right: 0.9rem !important;
+
+        /* VERY IMPORTANT FOR MOBILE */
+        padding-bottom: 180px !important;
     }
-    .app-header h1 { font-size: 2rem !important; }
-    .app-header p  { font-size: 0.92rem !important; }
-    .fact-card     { padding: 1.8rem 1.6rem; }
-    .fact-card .fact-text { font-size: 1.2rem !important; }
+
+    .app-title {
+        font-size: 2rem;
+    }
+
+    .app-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .fact-card {
+        padding: 1.5rem;
+    }
+
+    .fact-text {
+        font-size: 1.15rem;
+        line-height: 1.7;
+    }
+
     [data-testid="stChatInput"] {
-        width: 94% !important;
-        bottom: 10vh !important;
+        bottom: 14px !important;
+        width: calc(100% - 16px) !important;
     }
 }
 
 </style>
 """, unsafe_allow_html=True)
-
-# =====================================================
-# SCROLL-AWARE JS — hides bar on scroll up, shows on scroll down
-# Injected into the parent frame via postMessage trick inside an iframe
-# =====================================================
-
-components.html("""
-<script>
-(function () {
-    // Walk up to the top-level window (Streamlit host)
-    const win = window.parent || window;
-
-    let lastScrollY = 0;
-    let ticking = false;
-
-    function getScrollContainer() {
-        // Streamlit renders content inside .main > div[data-testid="stAppViewContainer"]
-        // The actual scrollable element is the .main block
-        return (
-            win.document.querySelector('.main') ||
-            win.document.querySelector('[data-testid="stAppViewContainer"]') ||
-            win.document.documentElement
-        );
-    }
-
-    function applyVisibility(scrollTop) {
-        const bar = win.document.querySelector('[data-testid="stChatInput"]');
-        if (!bar) return;
-
-        const diff = scrollTop - lastScrollY;
-
-        // Scrolling UP → hide
-        if (diff < -4) {
-            bar.classList.add('hide-bar');
-        }
-        // Scrolling DOWN or at top → show
-        else if (diff > 4 || scrollTop < 10) {
-            bar.classList.remove('hide-bar');
-        }
-
-        lastScrollY = scrollTop;
-        ticking = false;
-    }
-
-    function onScroll() {
-        if (!ticking) {
-            const el = getScrollContainer();
-            const scrollTop = el.scrollTop || win.scrollY || 0;
-            win.requestAnimationFrame(() => applyVisibility(scrollTop));
-            ticking = true;
-        }
-    }
-
-    // Attach listener once DOM is ready
-    function attach() {
-        const el = getScrollContainer();
-        if (el) {
-            el.addEventListener('scroll', onScroll, { passive: true });
-            win.addEventListener('scroll', onScroll, { passive: true });
-        } else {
-            setTimeout(attach, 300);
-        }
-    }
-
-    // Small delay so Streamlit DOM is fully painted
-    setTimeout(attach, 800);
-})();
-</script>
-""", height=0)
 
 # =====================================================
 # LOAD BOT
@@ -334,8 +276,10 @@ if "messages" not in st.session_state:
 
 st.markdown("""
 <div class="app-header">
-    <h1>Find my Drug</h1>
-    <p>Search medicines, uses, side effects and substitutes</p>
+    <div class="app-title">Find My Drug</div>
+    <div class="app-subtitle">
+        Search medicines, uses, side effects and substitutes
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -344,21 +288,22 @@ st.markdown("""
 # =====================================================
 
 if len(st.session_state.messages) == 0:
-    fact_card_html = (
-        '<div class="fact-wrapper">'
-        '<div class="fact-card">'
-        '<span class="fact-label">💡 Did you know</span>'
-        '<p class="fact-text">' + random_fact + '</p>'
-        '</div>'
-        '</div>'
-    )
-    st.markdown(fact_card_html, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="fact-container">
+        <div class="fact-card">
+            <div class="fact-title">💡 Did You Know</div>
+            <div class="fact-text">{random_fact}</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # =====================================================
 # CHAT HISTORY
 # =====================================================
 
 for message in st.session_state.messages:
+
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
@@ -366,7 +311,7 @@ for message in st.session_state.messages:
 # CHAT INPUT
 # =====================================================
 
-query = st.chat_input("Ask about a medicine")
+query = st.chat_input("Ask about a medicine...")
 
 # =====================================================
 # HANDLE QUERY
@@ -374,18 +319,40 @@ query = st.chat_input("Ask about a medicine")
 
 if query:
 
-    st.session_state.messages.append({"role": "user", "content": query})
+    # USER MESSAGE
+    st.session_state.messages.append({
+        "role": "user",
+        "content": query
+    })
+
     with st.chat_message("user"):
         st.markdown(query)
 
+    # ASSISTANT MESSAGE
     with st.chat_message("assistant"):
-        with st.spinner("Looking up..."):
+
+        with st.spinner("Looking up medicine..."):
+
             try:
+
                 result = bot.search_medicine(query)
+
                 response = bot.format_response(result)
+
                 st.markdown(response)
-                st.session_state.messages.append({"role": "assistant", "content": response})
+
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": response
+                })
+
             except Exception as e:
+
                 error_msg = f"❌ Something went wrong: {str(e)}"
+
                 st.error(error_msg)
-                st.session_state.messages.append({"role": "assistant", "content": error_msg})
+
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": error_msg
+                })
