@@ -355,7 +355,7 @@ Instructions:
             return """
 # ❌ Medicine Not Found
 
-Please only search the Medicine name
+Oops!, please search only with the medicine name ex: Dolo 650
 """
 
         # -------------------------------------------------
