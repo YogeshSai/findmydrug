@@ -100,7 +100,8 @@ class MedicineBot:
             "uses",
             "what",
             "are",
-            "the"
+            "the",
+            "of",
             "?"
         ]
 
@@ -315,12 +316,6 @@ Medicine Name:
 
 Salts / Composition:
 {salts}
-
-Uses:
-{uses}
-
-Side Effects:
-{side_effects}
 
 Instructions:
 - Explain what the medicine is
