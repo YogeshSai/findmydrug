@@ -317,10 +317,9 @@ Salts / Composition:
 {salts}
 
 Instructions:
-- Explain what the medicine is
+- Explain what the medicine is and mention common uses
 - Mention what the salts do
-- Mention common uses
-- Keep it short
+- Keep it very short less than 100 words
 - Avoid difficult medical jargon
 - Make it easy to understand
 """
