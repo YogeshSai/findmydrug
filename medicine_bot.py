@@ -73,6 +73,7 @@ class MedicineBot:
         print(f"📦 Total Medicines: {len(df)}")
 
         return df
+
 # =====================================================
 # CLEAN TEXT
 # =====================================================
@@ -85,29 +86,28 @@ def clean_text(self, text):
     text = str(text).lower().strip()
 
     # -------------------------------------------------
-    # REMOVE QUESTION SENTENCES
+    # REMOVE QUESTION PHRASES
     # -------------------------------------------------
 
     question_patterns = [
-        r"what is (.*?) used for",
-        r"what is",
-        r"used for",
-        r"tell me about",
-        r"about",
-        r"can i use",
-        r"how to use",
-        r"side effects of",
-        r"uses of",
-        r"benefits of",
-        r"for what",
-        r"why use",
-        r"medicine for",
+        "what is",
+        "used for",
+        "tell me about",
+        "about",
+        "can i use",
+        "how to use",
+        "side effects of",
+        "uses of",
+        "benefits of",
+        "for what",
+        "why use",
+        "medicine for",
     ]
 
     for pattern in question_patterns:
 
         text = re.sub(
-            pattern,
+            rf"\b{pattern}\b",
             "",
             text,
             flags=re.IGNORECASE
@@ -117,10 +117,14 @@ def clean_text(self, text):
     # REMOVE SYMBOLS
     # -------------------------------------------------
 
-    text = re.sub(r"[^a-zA-Z0-9\s]", " ", text)
+    text = re.sub(
+        r"[^a-zA-Z0-9\s]",
+        " ",
+        text
+    )
 
     # -------------------------------------------------
-    # REMOVE COMMON WORDS
+    # REMOVE COMMON MEDICINE WORDS
     # -------------------------------------------------
 
     remove_words = [
@@ -133,7 +137,9 @@ def clean_text(self, text):
         "syrup",
         "oral",
         "suspension",
-        "injection"
+        "injection",
+        "mg",
+        "ml"
     ]
 
     for word in remove_words:
@@ -145,13 +151,13 @@ def clean_text(self, text):
         )
 
     # -------------------------------------------------
-    # CLEAN EXTRA SPACES
+    # REMOVE EXTRA SPACES
     # -------------------------------------------------
 
     text = re.sub(r"\s+", " ", text)
 
     return text.strip()
-
+    
     # =====================================================
     # EXTRACT STRENGTH
     # =====================================================
