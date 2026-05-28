@@ -48,7 +48,7 @@ class MedicineBot:
         # -------------------------------------------------
 
         self.client = Groq(
-            api_key=st.secrets["GROQ_API_KEY"]
+        api_key=st.secrets["GROQ_API_KEY"]
         )
 
         print("✅ MedicineBot Ready\n")
@@ -85,109 +85,6 @@ class MedicineBot:
 
         text = str(text).lower().strip()
 
-        # -------------------------------------------------
-        # REMOVE QUESTION PHRASES
-        # -------------------------------------------------
-
-        question_patterns = [
-
-    # Basic Queries
-    "what is",
-    "what are",
-    "used for",
-    "use of",
-    "uses of",
-    "tell me about",
-    "about",
-    "medicine for",
-    "drug for",
-
-    # Usage Queries
-    "can i use",
-    "how to use",
-    "when to use",
-    "why use",
-    "for what",
-    "is it used for",
-    "what does",
-    "what do",
-    "purpose of",
-
-    # Information Queries
-    "give me details about",
-    "explain",
-    "describe",
-    "information about",
-    "details about",
-    "tell me uses of",
-    "can you explain",
-    "what is the use of",
-
-    # Side Effects Queries
-    "side effects of",
-    "adverse effects of",
-    "risks of",
-    "warnings of",
-    "problems with",
-
-    # Benefits Queries
-    "benefits of",
-    "advantages of",
-    "why take",
-    "why should i use",
-
-    # Dosage/Form Words
-    "tablet",
-    "tablets",
-    "capsule",
-    "capsules",
-    "syrup",
-    "injection",
-    "medicine",
-    "drug",
-
-    # Conversational Queries
-    "i want to know about",
-    "can you tell me about",
-    "please explain",
-    "do you know about",
-    "have you heard of",
-    "is",
-    "are",
-
-    # Common Natural Queries
-    "works for",
-    "good for",
-    "taken for",
-    "recommended for",
-    "prescribed for",
-    "helps with",
-    "helpful for",
-]
-
-        for pattern in question_patterns:
-
-            text = re.sub(
-                rf"\b{pattern}\b",
-                "",
-                text,
-                flags=re.IGNORECASE
-            )
-
-        # -------------------------------------------------
-        # REMOVE SYMBOLS
-        # -------------------------------------------------
-
-        text = re.sub(
-            r"[^a-zA-Z0-9\s]",
-            " ",
-            text
-        )
-
-        # -------------------------------------------------
-        # REMOVE COMMON MEDICINE WORDS
-        # -------------------------------------------------
-
         remove_words = [
             "tablet",
             "tablets",
@@ -196,29 +93,19 @@ class MedicineBot:
             "capsules",
             "cap",
             "syrup",
-            "oral",
-            "suspension",
+            "oral suspension",
             "injection",
             "mg",
             "ml"
         ]
 
         for word in remove_words:
+            text = text.replace(word, "")
 
-            text = re.sub(
-                rf"\b{word}\b",
-                "",
-                text
-            )
+        text = " ".join(text.split())
 
-        # -------------------------------------------------
-        # REMOVE EXTRA SPACES
-        # -------------------------------------------------
+        return text
 
-        text = re.sub(r"\s+", " ", text)
-
-        return text.strip()
-        
     # =====================================================
     # EXTRACT STRENGTH
     # =====================================================
@@ -238,86 +125,131 @@ class MedicineBot:
         return None
 
     # =====================================================
-    # SEARCH MEDICINE (UPDATED TO WORD-BY-WORD BREAKDOWN)
+    # SEARCH MEDICINE
     # =====================================================
 
     def search_medicine(self, query):
 
-        # Extract strength from the overall query to use for dosage matching bonus
-        query_strength = self.extract_strength(query)
-        
-        # Clean the sentence and break it down into independent words
-        cleaned_query = self.clean_text(query)
-        words = [w for w in cleaned_query.split(" ") if w.strip()]
+        query_clean = self.clean_text(query)
 
-        print(f"\n📝 Parsed search terms from sentence: {words}")
+        print(f"\n🔍 Searching for: {query_clean}")
 
-        # Check each word sequentially until a valid medicine match is found
-        for query_clean in words:
-            
-            # Skip short words or single letters that pass through the filter (e.g. "a", "i")
-            if len(query_clean) <= 1:
-                continue
+        query_strength = (
+            self.extract_strength(query)
+        )
 
-            print(f"🔍 Testing word: '{query_clean}'")
+        # -------------------------------------------------
+        # EXACT MATCH
+        # -------------------------------------------------
 
-            # 1. EXACT MATCH
-            exact_match = self.df[
-                self.df["search_name"].apply(self.clean_text) == query_clean
-            ]
-            if not exact_match.empty:
-                print(f"✅ Exact Match Found for '{query_clean}'")
-                return exact_match.iloc[0]
+        exact_match = self.df[
+            self.df["search_name"]
+            .apply(self.clean_text) == query_clean
+        ]
 
-            # 2. STARTS WITH MATCH
-            starts_match = self.df[
-                self.df["search_name"]
-                .apply(self.clean_text)
-                .str.startswith(query_clean)
-            ]
-            if not starts_match.empty:
-                print(f"✅ Starts-With Match Found for '{query_clean}'")
-                return starts_match.iloc[0]
+        if not exact_match.empty:
 
-            # 3. CONTAINS MATCH
-            contains_match = self.df[
-                self.df["search_name"]
-                .apply(self.clean_text)
-                .str.contains(query_clean, na=False)
-            ]
-            if not contains_match.empty:
-                print(f"✅ Contains Match Found for '{query_clean}'")
-                return contains_match.iloc[0]
+            print("✅ Exact Match Found")
 
-            # 4. FUZZY MATCH
-            best_match = None
-            best_score = 0
+            return exact_match.iloc[0]
 
-            for _, row in self.df.iterrows():
-                medicine_name = row["search_name"]
-                cleaned_name = self.clean_text(medicine_name)
+        # -------------------------------------------------
+        # STARTS WITH MATCH
+        # -------------------------------------------------
 
-                score = fuzz.token_sort_ratio(query_clean, cleaned_name)
+        starts_match = self.df[
+            self.df["search_name"]
+            .apply(self.clean_text)
+            .str.startswith(query_clean)
+        ]
 
-                # Dosage match bonus
-                med_strength = self.extract_strength(medicine_name)
-                if query_strength and med_strength:
-                    if query_strength == med_strength:
-                        score += 10
-                    else:
-                        score -= 20
+        if not starts_match.empty:
 
-                if score > best_score:
-                    best_score = score
-                    best_match = row
+            print("✅ Starts-With Match Found")
 
-            if best_match is not None and best_score >= 60:
-                print(f"\n🔍 Closest Fuzzy Match Found for '{query_clean}'")
-                print("Medicine:", best_match["name"])
-                print("Score:", best_score)
+            return starts_match.iloc[0]
+
+        # -------------------------------------------------
+        # CONTAINS MATCH
+        # -------------------------------------------------
+
+        contains_match = self.df[
+            self.df["search_name"]
+            .apply(self.clean_text)
+            .str.contains(query_clean, na=False)
+        ]
+
+        if not contains_match.empty:
+
+            print("✅ Contains Match Found")
+
+            return contains_match.iloc[0]
+
+        # -------------------------------------------------
+        # FUZZY MATCH
+        # -------------------------------------------------
+
+        best_match = None
+        best_score = 0
+
+        for _, row in self.df.iterrows():
+
+            medicine_name = row["search_name"]
+
+            cleaned_name = self.clean_text(
+                medicine_name
+            )
+
+            score = fuzz.token_sort_ratio(
+                query_clean,
+                cleaned_name
+            )
+
+            # ---------------------------------------------
+            # DOSAGE MATCH BONUS
+            # ---------------------------------------------
+
+            med_strength = (
+                self.extract_strength(
+                    medicine_name
+                )
+            )
+
+            if (
+                query_strength
+                and med_strength
+            ):
+
+                if query_strength == med_strength:
+                    score += 10
+
+                else:
+                    score -= 20
+
+            # ---------------------------------------------
+            # SAVE BEST MATCH
+            # ---------------------------------------------
+
+            if score > best_score:
+
+                best_score = score
+                best_match = row
+
+        # -------------------------------------------------
+        # FINAL RESULT
+        # -------------------------------------------------
+
+        if best_match is not None:
+
+            print("\n🔍 Closest Match Found")
+            print("Medicine:", best_match["name"])
+            print("Score:", best_score)
+
+            if best_score >= 60:
                 return best_match
 
-        print("❌ No Match Found for any word in the sentence.")
+        print("❌ No Match Found")
+
         return None
 
     # =====================================================
@@ -378,9 +310,9 @@ Salts / Composition:
 {salts}
 
 Instructions:
-- Explain what the medicine is and mention common uses
+- Explain what the medicine is and Mention common uses
 - Mention what the salts do
-- Keep it very short less than 100 words
+- Keep it short under 75 words
 - Avoid difficult medical jargon
 - Make it easy to understand
 """
@@ -423,11 +355,7 @@ Instructions:
             return """
 # ❌ Medicine Not Found
 
-Try searching:
-- Dolo 650
-- Crocin
-- Calpol
-- Azithromycin
+Please only search the Medicine name
 """
 
         # -------------------------------------------------
@@ -480,7 +408,8 @@ Try searching:
 
         ai_summary = self.generate_ai_summary(
             medicine_name,
-            salts
+            salts,
+            uses
         )
 
         # -------------------------------------------------
