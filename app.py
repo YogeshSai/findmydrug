@@ -74,9 +74,6 @@ MAIN CONTAINER
 
     padding-right: 1rem !important;
 
-    /*
-    Prevent content hiding behind searchbox
-    */
     padding-bottom: 240px !important;
 }
 
@@ -196,6 +193,29 @@ CHAT MESSAGES
     padding-bottom: 1rem !important;
 
     border-bottom: 1px solid #151515 !important;
+
+    gap: 0 !important;
+}
+
+/* REMOVE CHAT ICONS */
+
+[data-testid="stChatMessageAvatarAssistant"] {
+    display: none !important;
+}
+
+[data-testid="stChatMessageAvatarUser"] {
+    display: none !important;
+}
+
+/* EXPAND CONTENT */
+
+[data-testid="stChatMessageContent"] {
+
+    margin-left: 0 !important;
+
+    padding-left: 0 !important;
+
+    width: 100% !important;
 }
 
 /* =====================================================
