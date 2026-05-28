@@ -323,27 +323,35 @@ def generate_ai_summary(
     try:
 
         prompt = f"""
-You are a helpful medicine assistant.
+You are a medicine assistant.
 
-Explain this medicine in simple and beginner friendly language.
-
-Medicine Name:
+Medicine:
 {medicine_name}
 
-Salts / Composition:
+Composition:
 {salts}
 
-Instructions:
-- Explain what the medicine is
-- Mention what the salts do
-- Keep it short
-- Avoid difficult medical jargon
-- Make it easy to understand
-- Do NOT mention:
-  - What is it used for?
-  - Important Side Effects to Know
-  - Uses
-  - Side Effects
+STRICT RULES:
+- ONLY explain what the medicine is
+- ONLY explain what the salts are
+- Keep response within 3-4 lines
+- Use simple language
+- DO NOT mention:
+  - uses
+  - common uses
+  - side effects
+  - important side effects
+  - symptoms
+  - dosage
+  - warnings
+  - precautions
+- DO NOT create headings
+- DO NOT create bullet points
+- DO NOT say:
+  - "you can use"
+  - "used for"
+  - "helps with"
+  - "side effects include"
 """
 
         completion = (
@@ -355,8 +363,8 @@ Instructions:
                         "content": prompt
                     }
                 ],
-                temperature=0.3,
-                max_tokens=250
+                temperature=0.1,
+                max_tokens=120
             )
         )
 
@@ -368,14 +376,23 @@ Instructions:
         )
 
         unwanted_phrases = [
-            "What is it used for?",
-            "Important Side Effects to Know",
+            "Common Uses",
+            "Important Side Effects",
+            "Side Effects",
             "Uses",
-            "Side Effects"
+            "You can use",
+            "used for",
+            "helps with",
+            "side effects include"
         ]
 
         for phrase in unwanted_phrases:
-            summary = summary.replace(phrase, "")
+            summary = re.sub(
+                phrase,
+                "",
+                summary,
+                flags=re.IGNORECASE
+            )
 
         return summary.strip()
 
