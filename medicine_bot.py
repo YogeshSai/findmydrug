@@ -73,8 +73,7 @@ class MedicineBot:
         print(f"📦 Total Medicines: {len(df)}")
 
         return df
-
-    # =====================================================
+# =====================================================
 # CLEAN TEXT
 # =====================================================
 
@@ -85,27 +84,44 @@ def clean_text(self, text):
 
     text = str(text).lower().strip()
 
-    # Remove question phrases
+    # -------------------------------------------------
+    # REMOVE QUESTION SENTENCES
+    # -------------------------------------------------
+
     question_patterns = [
-        "what is it used for",
-        "what is this used for",
-        "what is",
-        "used for",
-        "tell me about",
-        "about",
-        "can i use",
-        "how to use",
-        "side effects of",
-        "uses of",
-        "benefits of",
-        "for what",
-        "why use",
-        "medicine for",
-        "?"
+        r"what is (.*?) used for",
+        r"what is",
+        r"used for",
+        r"tell me about",
+        r"about",
+        r"can i use",
+        r"how to use",
+        r"side effects of",
+        r"uses of",
+        r"benefits of",
+        r"for what",
+        r"why use",
+        r"medicine for",
     ]
 
     for pattern in question_patterns:
-        text = text.replace(pattern, "")
+
+        text = re.sub(
+            pattern,
+            "",
+            text,
+            flags=re.IGNORECASE
+        )
+
+    # -------------------------------------------------
+    # REMOVE SYMBOLS
+    # -------------------------------------------------
+
+    text = re.sub(r"[^a-zA-Z0-9\s]", " ", text)
+
+    # -------------------------------------------------
+    # REMOVE COMMON WORDS
+    # -------------------------------------------------
 
     remove_words = [
         "tablet",
@@ -115,18 +131,26 @@ def clean_text(self, text):
         "capsules",
         "cap",
         "syrup",
-        "oral suspension",
-        "injection",
-        "mg",
-        "ml"
+        "oral",
+        "suspension",
+        "injection"
     ]
 
     for word in remove_words:
-        text = text.replace(word, "")
 
-    text = " ".join(text.split())
+        text = re.sub(
+            rf"\b{word}\b",
+            "",
+            text
+        )
 
-    return text
+    # -------------------------------------------------
+    # CLEAN EXTRA SPACES
+    # -------------------------------------------------
+
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
 
     # =====================================================
     # EXTRACT STRENGTH
