@@ -106,9 +106,6 @@ class MedicineBot:
         # Strength extracted once per row
         self.df["_strength"] = self.df["_raw_lower"].map(self._extract_strength)
 
-        # The list rapidfuzz searches against
-        self._clean_names: list[str] = self.df["_clean_name"].tolist()
-
         print("✅ Search Index Built")
 
     # =====================================================
@@ -165,19 +162,27 @@ class MedicineBot:
             print("✅ Contains match")
             return self.df[mask].iloc[0]
 
-        # 4. Fuzzy match  (vectorized — no Python loop)
+        # 4. Fuzzy match — pre-filter by first token to shrink candidate pool
+        first_token = query_clean.split()[0] if query_clean.split() else query_clean
+
+        pre_mask = self.df["_clean_name"].str.contains(first_token, na=False, regex=False)
+        candidates_df = self.df[pre_mask] if pre_mask.any() else self.df
+
+        candidate_names  = candidates_df["_clean_name"].tolist()
+        candidate_indices = candidates_df.index.tolist()
+
         result = process.extractOne(
             query_clean,
-            self._clean_names,
+            candidate_names,
             scorer=fuzz.token_sort_ratio,
             score_cutoff=FUZZY_SCORE_CUTOFF,
         )
 
         if result:
-            matched_name, score, idx = result
+            matched_name, score, local_idx = result
+            real_idx = candidate_indices[local_idx]
+            row = self.df.loc[real_idx]
 
-            # Apply strength penalty / bonus without re-looping
-            row = self.df.iloc[idx]
             if query_strength:
                 if row["_strength"] == query_strength:
                     score += 10
@@ -263,7 +268,7 @@ class MedicineBot:
         if row is None:
             return (
                 "# ❌ Medicine Not Found\n\n"
-                "Oops! Please search with the medicine name only — e.g. **Dolo 650**"
+                "Oops! Please search with only using medicine name — e.g. **Dolo 650**"
             )
 
         medicine_name = row.get("name", "Unknown Medicine")
@@ -290,5 +295,5 @@ class MedicineBot:
             "---\n\n"
             f"## Side Effects\n{bullet_list(side_effects)}\n\n"
             "---\n\n"
-            f"## 🔄 Substitutes\n{bullet_list(substitutes)}"
+            f"## Substitutes\n{bullet_list(substitutes)}"
         )
