@@ -293,9 +293,7 @@ class MedicineBot:
     def generate_ai_summary(
         self,
         medicine_name,
-        salts,
-        uses,
-        side_effects
+        salts
     ):
 
         try:
@@ -311,18 +309,10 @@ Medicine Name:
 Salts / Composition:
 {salts}
 
-Uses:
-{uses}
-
-Side Effects:
-{side_effects}
-
 Instructions:
-- Explain what the medicine is
+- Explain what the medicine is and Mention common dossage of the medicine
 - Mention what the salts do
-- Mention common uses
-- Mention important side effects
-- Keep it short
+- Keep it short under 75 words
 - Avoid difficult medical jargon
 - Make it easy to understand
 """
