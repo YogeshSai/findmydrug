@@ -306,24 +306,23 @@ class MedicineBot:
         try:
 
             prompt = f"""
-You are a medicine assistant.
+You are a helpful medicine assistant.
 
-Medicine:
+Explain this medicine in simple and beginner friendly language.
+
+Medicine Name:
 {medicine_name}
 
-Composition:
+Salts / Composition:
 {salts}
 
-STRICT RULES:
-- ONLY explain what the medicine is
-- ONLY explain what the salts are
-- Keep response within 3-4 lines
-- Use simple language
-- DO NOT say:
-  - "you can use"
-  - "used for"
-  - "helps with"
-  - "side effects include"
+Instructions:
+- Explain what the medicine is
+- Mention what the salts do
+- Mention common uses
+- Keep it short
+- Avoid difficult medical jargon
+- Make it easy to understand
 """
 
             completion = (
@@ -335,28 +334,17 @@ STRICT RULES:
                             "content": prompt
                         }
                     ],
-                    temperature=0.1,
-                    max_tokens=120
+                    temperature=0.3,
+                    max_tokens=250
                 )
             )
 
-            summary = (
+            return (
                 completion
                 .choices[0]
                 .message
                 .content
             )
-
-
-            for phrase in unwanted_phrases:
-                summary = re.sub(
-                    phrase,
-                    "",
-                    summary,
-                    flags=re.IGNORECASE
-                )
-
-            return summary.strip()
 
         except Exception as e:
 
