@@ -372,7 +372,7 @@ header_html = (
     '<div class="app-header">'
         '<div class="app-title">FindMyDrug</div>'
         '<div class="app-subtitle">'
-            'Search medicines, uses, side effects and substitutes'
+            'Search for medicines and find uses, side effects and substitutes'
         '</div>'
     '</div>'
 )
