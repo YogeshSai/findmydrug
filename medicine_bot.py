@@ -1,6 +1,7 @@
+```python
 import pandas as pd
 import streamlit as st
-from rapidfuzz import process, fuzz
+from rapidfuzz import fuzz
 from groq import Groq
 import zipfile
 import re
@@ -48,7 +49,7 @@ class MedicineBot:
         # -------------------------------------------------
 
         self.client = Groq(
-        api_key=st.secrets["GROQ_API_KEY"]
+            api_key=st.secrets["GROQ_API_KEY"]
         )
 
         print("✅ MedicineBot Ready\n")
@@ -62,8 +63,11 @@ class MedicineBot:
         zip_path = "Data/medicine_dataset.zip"
 
         with zipfile.ZipFile(zip_path) as z:
+
             csv_file = z.namelist()[0]
+
             with z.open(csv_file) as f:
+
                 df = pd.read_csv(
                     f,
                     low_memory=False
@@ -85,6 +89,35 @@ class MedicineBot:
 
         text = str(text).lower().strip()
 
+        # -------------------------------------------------
+        # REMOVE QUESTION PHRASES
+        # -------------------------------------------------
+
+        question_patterns = [
+            "what is it used for",
+            "what is this used for",
+            "what is",
+            "used for",
+            "tell me about",
+            "about",
+            "can i use",
+            "how to use",
+            "side effects of",
+            "uses of",
+            "benefits of",
+            "for what",
+            "why use",
+            "medicine for",
+            "?",
+        ]
+
+        for pattern in question_patterns:
+            text = text.replace(pattern, "")
+
+        # -------------------------------------------------
+        # REMOVE COMMON MEDICINE WORDS
+        # -------------------------------------------------
+
         remove_words = [
             "tablet",
             "tablets",
@@ -101,16 +134,19 @@ class MedicineBot:
             "what",
             "are",
             "the",
-            "of",
-            "?"
+            "of"
         ]
 
         for word in remove_words:
             text = text.replace(word, "")
 
-        text = " ".join(text.split())
+        # -------------------------------------------------
+        # REMOVE EXTRA SPACES
+        # -------------------------------------------------
 
-        return text
+        text = re.sub(r"\s+", " ", text)
+
+        return text.strip()
 
     # =====================================================
     # EXTRACT STRENGTH
@@ -228,7 +264,6 @@ class MedicineBot:
 
                 if query_strength == med_strength:
                     score += 10
-
                 else:
                     score -= 20
 
@@ -287,7 +322,10 @@ class MedicineBot:
 
                         values.append(value)
 
-        # Remove duplicates
+        # -------------------------------------------------
+        # REMOVE DUPLICATES
+        # -------------------------------------------------
+
         values = list(dict.fromkeys(values))
 
         return values
@@ -307,7 +345,7 @@ class MedicineBot:
             prompt = f"""
 You are a helpful medicine assistant.
 
-Explain this medicine in simple and beginner friendly language.
+Explain this medicine in simple beginner-friendly language.
 
 Medicine Name:
 {medicine_name}
@@ -315,12 +353,18 @@ Medicine Name:
 Salts / Composition:
 {salts}
 
-Instructions:
-- Explain what the medicine is
-- Mention what the salts do
-- Keep it short
+IMPORTANT RULES:
+- ONLY explain what the medicine is
+- Explain what the salts do
+- Keep it short and simple
 - Avoid difficult medical jargon
-- Make it easy to understand
+- Do NOT mention:
+  - What is it used for?
+  - Important Side Effects to Know
+  - Usage instructions
+  - Warnings
+- Do NOT create headings
+- Keep response concise
 """
 
             completion = (
@@ -333,16 +377,36 @@ Instructions:
                         }
                     ],
                     temperature=0.3,
-                    max_tokens=250
+                    max_tokens=180
                 )
             )
 
-            return (
+            summary = (
                 completion
                 .choices[0]
                 .message
                 .content
             )
+
+            # -------------------------------------------------
+            # REMOVE UNWANTED PHRASES
+            # -------------------------------------------------
+
+            unwanted_phrases = [
+                "What is it used for?",
+                "Important Side Effects to Know",
+                "Side Effects",
+                "Uses",
+                "Warnings"
+            ]
+
+            for phrase in unwanted_phrases:
+                summary = summary.replace(
+                    phrase,
+                    ""
+                )
+
+            return summary.strip()
 
         except Exception as e:
 
@@ -476,3 +540,4 @@ Try searching:
 """
 
         return response
+```
