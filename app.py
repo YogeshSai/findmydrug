@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# FACTS
+# MEDICINE FACTS
 # =====================================================
 
 medicine_facts = [
@@ -33,7 +33,7 @@ medicine_facts = [
 random_fact = random.choice(medicine_facts)
 
 # =====================================================
-# CSS
+# CUSTOM CSS
 # =====================================================
 
 st.markdown("""
@@ -141,21 +141,35 @@ FACT CARD
     border-radius: 20px;
 
     padding: 2rem;
+
+    text-align: center;
 }
+
+/* =====================================================
+DID YOU KNOW
+===================================================== */
 
 .fact-label {
 
-    color: #666666;
+    color: #8a8a8a;
 
-    font-size: 0.78rem;
+    font-size: 1.1rem;
 
-    font-weight: 700;
+    font-weight: 800;
 
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 
     text-transform: uppercase;
 
-    margin-bottom: 1rem;
+    margin-bottom: 1.3rem;
+
+    text-align: center;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
 }
 
 .fact-text {
