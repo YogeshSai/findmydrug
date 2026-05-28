@@ -457,22 +457,22 @@ Try searching:
         response = f"""
 # {medicine_name}
 
-## 🧠 AI Summary
+## AI Summary
 {ai_summary}
 
 ---
 
-## ✅ Uses
+## Uses
 {uses_text}
 
 ---
 
-## ⚠️ Side Effects
+## Side Effects
 {side_effects_text}
 
 ---
 
-## 🔄 Substitutes
+## Substitutes
 {substitutes_text}
 """
 
