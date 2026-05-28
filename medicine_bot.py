@@ -1,7 +1,6 @@
-```python
 import pandas as pd
 import streamlit as st
-from rapidfuzz import fuzz
+from rapidfuzz import process, fuzz
 from groq import Groq
 import zipfile
 import re
@@ -49,7 +48,7 @@ class MedicineBot:
         # -------------------------------------------------
 
         self.client = Groq(
-            api_key=st.secrets["GROQ_API_KEY"]
+        api_key=st.secrets["GROQ_API_KEY"]
         )
 
         print("✅ MedicineBot Ready\n")
@@ -63,11 +62,8 @@ class MedicineBot:
         zip_path = "Data/medicine_dataset.zip"
 
         with zipfile.ZipFile(zip_path) as z:
-
             csv_file = z.namelist()[0]
-
             with z.open(csv_file) as f:
-
                 df = pd.read_csv(
                     f,
                     low_memory=False
@@ -79,74 +75,58 @@ class MedicineBot:
         return df
 
     # =====================================================
-    # CLEAN TEXT
-    # =====================================================
+# CLEAN TEXT
+# =====================================================
 
-    def clean_text(self, text):
+def clean_text(self, text):
 
-        if pd.isna(text):
-            return ""
+    if pd.isna(text):
+        return ""
 
-        text = str(text).lower().strip()
+    text = str(text).lower().strip()
 
-        # -------------------------------------------------
-        # REMOVE QUESTION PHRASES
-        # -------------------------------------------------
+    # Remove question phrases
+    question_patterns = [
+        "what is it used for",
+        "what is this used for",
+        "what is",
+        "used for",
+        "tell me about",
+        "about",
+        "can i use",
+        "how to use",
+        "side effects of",
+        "uses of",
+        "benefits of",
+        "for what",
+        "why use",
+        "medicine for",
+        "?"
+    ]
 
-        question_patterns = [
-            "what is it used for",
-            "what is this used for",
-            "what is",
-            "used for",
-            "tell me about",
-            "about",
-            "can i use",
-            "how to use",
-            "side effects of",
-            "uses of",
-            "benefits of",
-            "for what",
-            "why use",
-            "medicine for",
-            "?",
-        ]
+    for pattern in question_patterns:
+        text = text.replace(pattern, "")
 
-        for pattern in question_patterns:
-            text = text.replace(pattern, "")
+    remove_words = [
+        "tablet",
+        "tablets",
+        "tab",
+        "capsule",
+        "capsules",
+        "cap",
+        "syrup",
+        "oral suspension",
+        "injection",
+        "mg",
+        "ml"
+    ]
 
-        # -------------------------------------------------
-        # REMOVE COMMON MEDICINE WORDS
-        # -------------------------------------------------
+    for word in remove_words:
+        text = text.replace(word, "")
 
-        remove_words = [
-            "tablet",
-            "tablets",
-            "tab",
-            "capsule",
-            "capsules",
-            "cap",
-            "syrup",
-            "oral suspension",
-            "injection",
-            "mg",
-            "ml",
-            "uses",
-            "what",
-            "are",
-            "the",
-            "of"
-        ]
+    text = " ".join(text.split())
 
-        for word in remove_words:
-            text = text.replace(word, "")
-
-        # -------------------------------------------------
-        # REMOVE EXTRA SPACES
-        # -------------------------------------------------
-
-        text = re.sub(r"\s+", " ", text)
-
-        return text.strip()
+    return text
 
     # =====================================================
     # EXTRACT STRENGTH
@@ -264,6 +244,7 @@ class MedicineBot:
 
                 if query_strength == med_strength:
                     score += 10
+
                 else:
                     score -= 20
 
@@ -322,30 +303,29 @@ class MedicineBot:
 
                         values.append(value)
 
-        # -------------------------------------------------
-        # REMOVE DUPLICATES
-        # -------------------------------------------------
-
+        # Remove duplicates
         values = list(dict.fromkeys(values))
 
         return values
 
-    # =====================================================
-    # GENERATE AI SUMMARY
-    # =====================================================
+# =====================================================
+# GENERATE AI SUMMARY
+# =====================================================
 
-    def generate_ai_summary(
-        self,
-        medicine_name,
-        salts,
-    ):
+def generate_ai_summary(
+    self,
+    medicine_name,
+    salts,
+    uses,
+    side_effects
+):
 
-        try:
+    try:
 
-            prompt = f"""
+        prompt = f"""
 You are a helpful medicine assistant.
 
-Explain this medicine in simple beginner-friendly language.
+Explain this medicine in simple and beginner friendly language.
 
 Medicine Name:
 {medicine_name}
@@ -353,66 +333,57 @@ Medicine Name:
 Salts / Composition:
 {salts}
 
-IMPORTANT RULES:
-- ONLY explain what the medicine is
-- Explain what the salts do
-- Keep it short and simple
+Instructions:
+- Explain what the medicine is
+- Mention what the salts do
+- Keep it short
 - Avoid difficult medical jargon
+- Make it easy to understand
 - Do NOT mention:
   - What is it used for?
   - Important Side Effects to Know
-  - Usage instructions
-  - Warnings
-- Do NOT create headings
-- Keep response concise
+  - Uses
+  - Side Effects
 """
 
-            completion = (
-                self.client.chat.completions.create(
-                    model="llama-3.1-8b-instant",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                    temperature=0.3,
-                    max_tokens=180
-                )
+        completion = (
+            self.client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.3,
+                max_tokens=250
             )
+        )
 
-            summary = (
-                completion
-                .choices[0]
-                .message
-                .content
-            )
+        summary = (
+            completion
+            .choices[0]
+            .message
+            .content
+        )
 
-            # -------------------------------------------------
-            # REMOVE UNWANTED PHRASES
-            # -------------------------------------------------
+        unwanted_phrases = [
+            "What is it used for?",
+            "Important Side Effects to Know",
+            "Uses",
+            "Side Effects"
+        ]
 
-            unwanted_phrases = [
-                "What is it used for?",
-                "Important Side Effects to Know",
-                "Side Effects",
-                "Uses",
-                "Warnings"
-            ]
+        for phrase in unwanted_phrases:
+            summary = summary.replace(phrase, "")
 
-            for phrase in unwanted_phrases:
-                summary = summary.replace(
-                    phrase,
-                    ""
-                )
+        return summary.strip()
 
-            return summary.strip()
+    except Exception as e:
 
-        except Exception as e:
+        print("❌ Groq Error:", e)
 
-            print("❌ Groq Error:", e)
-
-            return "AI Summary Unavailable."
+        return "AI Summary Unavailable."
 
     # =====================================================
     # FORMAT RESPONSE
@@ -482,7 +453,9 @@ Try searching:
 
         ai_summary = self.generate_ai_summary(
             medicine_name,
-            salts
+            salts,
+            uses,
+            side_effects
         )
 
         # -------------------------------------------------
@@ -540,4 +513,3 @@ Try searching:
 """
 
         return response
-```
