@@ -2,3 +2,8 @@ streamlit
 pandas
 rapidfuzz
 groq
+numpy
+spacy
+sentence-transformers
+scikit-learn
+torch
