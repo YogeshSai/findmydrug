@@ -1,52 +1,10 @@
-import re
-import zipfile
-from typing import List, Optional
-
 import pandas as pd
 import streamlit as st
+from rapidfuzz import process, fuzz
 from groq import Groq
-from rapidfuzz import fuzz, process
+import zipfile
+import re
 
-
-# =========================================================
-# CONSTANTS
-# =========================================================
-
-REMOVE_WORDS = re.compile(
-    r'\b(tablets?|tab|capsules?|cap|syrup|oral suspension|injection|mg|ml)\b',
-    flags=re.IGNORECASE
-)
-
-STRENGTH_PATTERN = re.compile(r'(\d+)\s?(mg|ml)', re.IGNORECASE)
-
-FUZZY_SCORE_CUTOFF  = 60
-MAX_DISPLAY_ITEMS   = 10
-AI_MAX_TOKENS       = 250
-AI_TEMPERATURE      = 0.3
-AI_MODEL            = "llama-3.1-8b-instant"
-
-AI_PROMPT_TEMPLATE = """You are a helpful medicine assistant.
-
-Explain this medicine in simple and beginner friendly language.
-
-Medicine Name:
-{medicine_name}
-
-Salts / Composition:
-{salts}
-
-Instructions:
-- Explain what the medicine is and mention common uses
-- Mention what the salts do
-- Keep it short under 75 words
-- Avoid difficult medical jargon
-- Make it easy to understand
-"""
-
-
-# =========================================================
-# MEDICINE BOT
-# =========================================================
 
 class MedicineBot:
 
@@ -58,10 +16,40 @@ class MedicineBot:
 
         print("\n🚀 Initializing MedicineBot...\n")
 
-        self.df     = self._load_dataset()
-        self.client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+        # -------------------------------------------------
+        # LOAD DATASET
+        # -------------------------------------------------
 
-        self._build_search_index()
+        self.df = self.load_dataset()
+
+        # -------------------------------------------------
+        # CREATE SEARCH COLUMN
+        # -------------------------------------------------
+
+        self.df["search_name"] = (
+            self.df["name"]
+            .astype(str)
+            .str.lower()
+            .str.strip()
+        )
+
+        # -------------------------------------------------
+        # MEDICINE NAMES
+        # -------------------------------------------------
+
+        self.medicine_names = (
+            self.df["search_name"]
+            .dropna()
+            .tolist()
+        )
+
+        # -------------------------------------------------
+        # GROQ CLIENT
+        # -------------------------------------------------
+
+        self.client = Groq(
+        api_key=st.secrets["GROQ_API_KEY"]
+        )
 
         print("✅ MedicineBot Ready\n")
 
@@ -69,231 +57,422 @@ class MedicineBot:
     # LOAD DATASET
     # =====================================================
 
-    def _load_dataset(self) -> pd.DataFrame:
+    def load_dataset(self):
 
         zip_path = "Data/medicine_dataset.zip"
 
         with zipfile.ZipFile(zip_path) as z:
-            csv_name = z.namelist()[0]
-            with z.open(csv_name) as f:
-                df = pd.read_csv(f, low_memory=False)
+            csv_file = z.namelist()[0]
+            with z.open(csv_file) as f:
+                df = pd.read_csv(
+                    f,
+                    low_memory=False
+                )
 
-        print(f"✅ Dataset Loaded — {len(df):,} medicines")
+        print("✅ Dataset Loaded")
+        print(f"📦 Total Medicines: {len(df)}")
 
         return df
-
-    # =====================================================
-    # BUILD SEARCH INDEX  (runs once at startup)
-    # =====================================================
-
-    def _build_search_index(self) -> None:
-        """
-        Pre-compute every derived column once so that
-        search_medicine() never calls apply() at query time.
-        """
-
-        # Raw lowercase name (kept for display fallback)
-        self.df["_raw_lower"] = (
-            self.df["name"]
-            .astype(str)
-            .str.lower()
-            .str.strip()
-        )
-
-        # Fully cleaned name — strip form-factor words & dosage
-        self.df["_clean_name"] = self.df["_raw_lower"].map(self._clean_text)
-
-        # Strength extracted once per row
-        self.df["_strength"] = self.df["_raw_lower"].map(self._extract_strength)
-
-        print("✅ Search Index Built")
 
     # =====================================================
     # CLEAN TEXT
     # =====================================================
 
-    @staticmethod
-    def _clean_text(text: str) -> str:  # type: ignore[return]
+    def clean_text(self, text):
 
-        if not text or pd.isna(text):
+        if pd.isna(text):
             return ""
 
-        text = REMOVE_WORDS.sub("", str(text).lower().strip())
+        text = str(text).lower().strip()
 
-        return " ".join(text.split())
+        remove_words = [
+            "tablet",
+            "tablets",
+            "tab",
+            "capsule",
+            "capsules",
+            "cap",
+            "syrup",
+            "oral suspension",
+            "injection",
+            "mg",
+            "ml"
+        ]
+
+        for word in remove_words:
+            text = text.replace(word, "")
+
+        text = " ".join(text.split())
+
+        return text
 
     # =====================================================
     # EXTRACT STRENGTH
     # =====================================================
 
-    @staticmethod
-    def _extract_strength(text: str) -> Optional[str]:
+    def extract_strength(self, text):
 
-        m = STRENGTH_PATTERN.search(str(text))
+        text = str(text).lower()
 
-        return m.group(1) if m else None
+        match = re.search(
+            r'(\d+)\s?(mg|ml)',
+            text
+        )
+
+        if match:
+            return match.group(1)
+
+        return None
 
     # =====================================================
     # SEARCH MEDICINE
     # =====================================================
 
-    def search_medicine(self, query: str) -> Optional[pd.Series]:
+    def search_medicine(self, query):
 
-        query_clean    = self._clean_text(query)
-        query_strength = self._extract_strength(query)
+        query_clean = self.clean_text(query)
 
-        print(f"\n🔍 Searching: '{query_clean}'")
+        print(f"\n🔍 Searching for: {query_clean}")
 
-        # 1. Exact match
-        mask = self.df["_clean_name"] == query_clean
-        if mask.any():
-            print("✅ Exact match")
-            return self.df[mask].iloc[0]
-
-        # 2. Starts-with match
-        mask = self.df["_clean_name"].str.startswith(query_clean, na=False)
-        if mask.any():
-            print("✅ Starts-with match")
-            return self.df[mask].iloc[0]
-
-        # 3. Contains match
-        mask = self.df["_clean_name"].str.contains(query_clean, na=False, regex=False)
-        if mask.any():
-            print("✅ Contains match")
-            return self.df[mask].iloc[0]
-
-        # 4. Fuzzy match — pre-filter by first token to shrink candidate pool
-        first_token = query_clean.split()[0] if query_clean.split() else query_clean
-
-        pre_mask = self.df["_clean_name"].str.contains(first_token, na=False, regex=False)
-        candidates_df = self.df[pre_mask] if pre_mask.any() else self.df
-
-        candidate_names  = candidates_df["_clean_name"].tolist()
-        candidate_indices = candidates_df.index.tolist()
-
-        result = process.extractOne(
-            query_clean,
-            candidate_names,
-            scorer=fuzz.token_sort_ratio,
-            score_cutoff=FUZZY_SCORE_CUTOFF,
+        query_strength = (
+            self.extract_strength(query)
         )
 
-        if result:
-            matched_name, score, local_idx = result
-            real_idx = candidate_indices[local_idx]
-            row = self.df.loc[real_idx]
+        # -------------------------------------------------
+        # EXACT MATCH
+        # -------------------------------------------------
 
-            if query_strength:
-                if row["_strength"] == query_strength:
+        exact_match = self.df[
+            self.df["search_name"]
+            .apply(self.clean_text) == query_clean
+        ]
+
+        if not exact_match.empty:
+
+            print("✅ Exact Match Found")
+
+            return exact_match.iloc[0]
+
+        # -------------------------------------------------
+        # STARTS WITH MATCH
+        # -------------------------------------------------
+
+        starts_match = self.df[
+            self.df["search_name"]
+            .apply(self.clean_text)
+            .str.startswith(query_clean)
+        ]
+
+        if not starts_match.empty:
+
+            print("✅ Starts-With Match Found")
+
+            return starts_match.iloc[0]
+
+        # -------------------------------------------------
+        # CONTAINS MATCH
+        # -------------------------------------------------
+
+        contains_match = self.df[
+            self.df["search_name"]
+            .apply(self.clean_text)
+            .str.contains(query_clean, na=False)
+        ]
+
+        if not contains_match.empty:
+
+            print("✅ Contains Match Found")
+
+            return contains_match.iloc[0]
+
+        # -------------------------------------------------
+        # FUZZY MATCH
+        # -------------------------------------------------
+
+        best_match = None
+        best_score = 0
+
+        for _, row in self.df.iterrows():
+
+            medicine_name = row["search_name"]
+
+            cleaned_name = self.clean_text(
+                medicine_name
+            )
+
+            score = fuzz.token_sort_ratio(
+                query_clean,
+                cleaned_name
+            )
+
+            # ---------------------------------------------
+            # DOSAGE MATCH BONUS
+            # ---------------------------------------------
+
+            med_strength = (
+                self.extract_strength(
+                    medicine_name
+                )
+            )
+
+            if (
+                query_strength
+                and med_strength
+            ):
+
+                if query_strength == med_strength:
                     score += 10
+
                 else:
                     score -= 20
 
-            if score >= FUZZY_SCORE_CUTOFF:
-                print(f"✅ Fuzzy match — '{matched_name}' (score: {score})")
-                return row
+            # ---------------------------------------------
+            # SAVE BEST MATCH
+            # ---------------------------------------------
 
-        print("❌ No match found")
+            if score > best_score:
+
+                best_score = score
+                best_match = row
+
+        # -------------------------------------------------
+        # FINAL RESULT
+        # -------------------------------------------------
+
+        if best_match is not None:
+
+            print("\n🔍 Closest Match Found")
+            print("Medicine:", best_match["name"])
+            print("Score:", best_score)
+
+            if best_score >= 60:
+                return best_match
+
+        print("❌ No Match Found")
 
         return None
 
     # =====================================================
-    # GET COLUMN VALUES  (keyword search across columns)
+    # GET VALUES
     # =====================================================
 
-    @staticmethod
-    def _get_values(row: pd.Series, keyword: str) -> List[str]:
-
-        keyword_lower = keyword.lower()
-
-        invalid = {"", "nan", "none", "null"}
+    def get_values(self, row, keyword):
 
         values = []
 
         for col in row.index:
 
-            if keyword_lower not in col.lower():
-                continue
+            if keyword.lower() in col.lower():
 
-            val = row[col]
+                value = row[col]
 
-            if pd.isna(val):
-                continue
+                if pd.notna(value):
 
-            val = str(val).strip()
+                    value = str(value).strip()
 
-            if val.lower() not in invalid:
-                values.append(val)
+                    invalid_values = [
+                        "",
+                        "nan",
+                        "none",
+                        "null"
+                    ]
 
-        # Preserve order, remove duplicates
-        return list(dict.fromkeys(values))
+                    if value.lower() not in invalid_values:
+
+                        values.append(value)
+
+        # Remove duplicates
+        values = list(dict.fromkeys(values))
+
+        return values
 
     # =====================================================
     # GENERATE AI SUMMARY
     # =====================================================
 
-    def _generate_ai_summary(
+    def generate_ai_summary(
         self,
-        medicine_name: str,
-        salts: List[str],
-        uses: List[str],
-    ) -> str:
-
-        prompt = AI_PROMPT_TEMPLATE.format(
-            medicine_name=medicine_name,
-            salts=", ".join(salts) if salts else "Not available",
-            uses=", ".join(uses[:5]) if uses else "Not available",
-        )
+        medicine_name,
+        salts,
+        uses,
+        side_effects
+    ):
 
         try:
-            completion = self.client.chat.completions.create(
-                model=AI_MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=AI_TEMPERATURE,
-                max_tokens=AI_MAX_TOKENS,
+
+            prompt = f"""
+You are a helpful medicine assistant.
+
+Explain this medicine in simple and beginner friendly language.
+
+Medicine Name:
+{medicine_name}
+
+Salts / Composition:
+{salts}
+
+Uses:
+{uses}
+
+Side Effects:
+{side_effects}
+
+Instructions:
+- Explain what the medicine is
+- Mention what the salts do
+- Mention common uses
+- Mention important side effects
+- Keep it short
+- Avoid difficult medical jargon
+- Make it easy to understand
+"""
+
+            completion = (
+                self.client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    temperature=0.3,
+                    max_tokens=250
+                )
             )
 
-            return completion.choices[0].message.content
+            return (
+                completion
+                .choices[0]
+                .message
+                .content
+            )
 
         except Exception as e:
-            print(f"❌ Groq Error: {e}")
+
+            print("❌ Groq Error:", e)
+
             return "AI Summary Unavailable."
 
     # =====================================================
     # FORMAT RESPONSE
     # =====================================================
 
-    def format_response(self, row: Optional[pd.Series]) -> str:
+    def format_response(self, row):
 
         if row is None:
-            return (
-                "# ❌ Medicine Not Found\n\n"
-                "Oops! Please search with only using medicine name — e.g. **Dolo 650**"
-            )
 
-        medicine_name = row.get("name", "Unknown Medicine")
+            return """
+# ❌ Medicine Not Found
 
-        # Collect fields
-        salts       = self._get_values(row, "salt") or self._get_values(row, "composition")
-        uses        = self._get_values(row, "use")
-        side_effects = self._get_values(row, "side")
-        substitutes  = self._get_values(row, "substitute")
+"Oops! Please search only for medicine — e.g. **Dolo 650**"
+"""
 
-        ai_summary = self._generate_ai_summary(medicine_name, salts, uses)
+        # -------------------------------------------------
+        # BASIC DETAILS
+        # -------------------------------------------------
 
-        def bullet_list(items: list[str], limit: int = MAX_DISPLAY_ITEMS) -> str:
-            return (
-                "\n".join(f"- {i}" for i in items[:limit])
-                if items else "Not Available"
-            )
-
-        return (
-            f"# {medicine_name}\n\n"
-            f"## AI Summary\n{ai_summary}\n\n"
-            "---\n\n"
-            f"## Uses\n{bullet_list(uses)}\n\n"
-            "---\n\n"
-            f"## Side Effects\n{bullet_list(side_effects)}\n\n"
-            "---\n\n"
-            f"## Substitutes\n{bullet_list(substitutes)}"
+        medicine_name = row.get(
+            "name",
+            "Unknown Medicine"
         )
+
+        # -------------------------------------------------
+        # SALTS / COMPOSITION
+        # -------------------------------------------------
+
+        salts = self.get_values(
+            row,
+            "salt"
+        )
+
+        if not salts:
+
+            salts = self.get_values(
+                row,
+                "composition"
+            )
+
+        # -------------------------------------------------
+        # EXTRACT VALUES
+        # -------------------------------------------------
+
+        uses = self.get_values(
+            row,
+            "use"
+        )
+
+        side_effects = self.get_values(
+            row,
+            "side"
+        )
+
+        substitutes = self.get_values(
+            row,
+            "substitute"
+        )
+
+        # -------------------------------------------------
+        # AI SUMMARY
+        # -------------------------------------------------
+
+        ai_summary = self.generate_ai_summary(
+            medicine_name,
+            salts
+        )
+
+        # -------------------------------------------------
+        # FORMAT TEXT
+        # -------------------------------------------------
+
+        uses_text = (
+            "\n".join(
+                [f"- {u}" for u in uses[:10]]
+            )
+            if uses else
+            "Not Available"
+        )
+
+        side_effects_text = (
+            "\n".join(
+                [f"- {s}" for s in side_effects[:10]]
+            )
+            if side_effects else
+            "Not Available"
+        )
+
+        substitutes_text = (
+            "\n".join(
+                [f"- {s}" for s in substitutes[:10]]
+            )
+            if substitutes else
+            "Not Available"
+        )
+
+        # -------------------------------------------------
+        # FINAL RESPONSE
+        # -------------------------------------------------
+
+        response = f"""
+# {medicine_name}
+
+## AI Summary
+{ai_summary}
+
+---
+
+## Uses
+{uses_text}
+
+---
+
+## Side Effects
+{side_effects_text}
+
+---
+
+## Substitutes
+{substitutes_text}
+"""
+
+        return response
