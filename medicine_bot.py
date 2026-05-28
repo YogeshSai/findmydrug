@@ -1,48 +1,40 @@
-```python
-# ============================================================
-# IMPORTS
-# ============================================================
-
-import re
-import zipfile
-import numpy as np
 import pandas as pd
 import streamlit as st
-
-from groq import Groq
-
 from rapidfuzz import process, fuzz
-
+from groq import Groq
+import zipfile
+import re
+import numpy as np
 import spacy
 
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import (
+    SentenceTransformer
+)
 
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import (
+    cosine_similarity
+)
 
-
-# ============================================================
-# MEDICINE BOT
-# ============================================================
 
 class MedicineBot:
 
-    # ========================================================
+    # =====================================================
     # INITIALIZE
-    # ========================================================
+    # =====================================================
 
     def __init__(self):
 
         print("\n🚀 Initializing MedicineBot...\n")
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # LOAD DATASET
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         self.df = self.load_dataset()
 
-        # ----------------------------------------------------
-        # SEARCH NAME
-        # ----------------------------------------------------
+        # -------------------------------------------------
+        # CREATE SEARCH COLUMN
+        # -------------------------------------------------
 
         self.df["search_name"] = (
             self.df["name"]
@@ -51,9 +43,9 @@ class MedicineBot:
             .str.strip()
         )
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # NLP SEARCH TEXT
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         self.df["nlp_text"] = (
             self.df.astype(str)
@@ -64,9 +56,9 @@ class MedicineBot:
             .str.lower()
         )
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # MEDICINE NAMES
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         self.medicine_names = (
             self.df["search_name"]
@@ -74,9 +66,9 @@ class MedicineBot:
             .tolist()
         )
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # LOAD NLP MODELS
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         print("🧠 Loading NLP Models...")
 
@@ -84,13 +76,15 @@ class MedicineBot:
             "en_core_web_sm"
         )
 
-        self.embedding_model = SentenceTransformer(
-            "all-MiniLM-L6-v2"
+        self.embedding_model = (
+            SentenceTransformer(
+                "all-MiniLM-L6-v2"
+            )
         )
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # CREATE EMBEDDINGS
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         print("⚡ Creating Embeddings...")
 
@@ -101,25 +95,31 @@ class MedicineBot:
             )
         )
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # GROQ CLIENT
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         self.client = Groq(
-            api_key=st.secrets["GROQ_API_KEY"]
+            api_key=st.secrets[
+                "GROQ_API_KEY"
+            ]
         )
 
-        print("\n✅ MedicineBot Ready\n")
+        print("✅ MedicineBot Ready\n")
 
-    # ========================================================
+    # =====================================================
     # LOAD DATASET
-    # ========================================================
+    # =====================================================
 
     def load_dataset(self):
 
-        zip_path = "Data/medicine_dataset.zip"
+        zip_path = (
+            "Data/medicine_dataset.zip"
+        )
 
-        with zipfile.ZipFile(zip_path) as z:
+        with zipfile.ZipFile(
+            zip_path
+        ) as z:
 
             csv_file = z.namelist()[0]
 
@@ -131,20 +131,22 @@ class MedicineBot:
                 )
 
         print("✅ Dataset Loaded")
-        print(f"📦 Total Medicines: {len(df)}")
+        print(
+            f"📦 Total Medicines: {len(df)}"
+        )
 
         return df
 
-    # ========================================================
+    # =====================================================
     # CLEAN TEXT
-    # ========================================================
+    # =====================================================
 
     def clean_text(self, text):
 
         if pd.isna(text):
             return ""
 
-        text = str(text).lower()
+        text = str(text).lower().strip()
 
         remove_words = [
             "tablet",
@@ -154,6 +156,8 @@ class MedicineBot:
             "capsules",
             "cap",
             "syrup",
+            "oral suspension",
+            "injection",
             "medicine",
             "drug",
             "mg",
@@ -173,11 +177,13 @@ class MedicineBot:
             text
         )
 
-        return " ".join(text.split())
+        text = " ".join(text.split())
 
-    # ========================================================
-    # CLEAN NLP QUERY
-    # ========================================================
+        return text
+
+    # =====================================================
+    # CLEAN QUERY
+    # =====================================================
 
     def clean_query(self, query):
 
@@ -215,9 +221,9 @@ class MedicineBot:
 
         return query.strip()
 
-    # ========================================================
-    # DETECT QUERY TYPE
-    # ========================================================
+    # =====================================================
+    # DETECT INTENT
+    # =====================================================
 
     def detect_intent(self, query):
 
@@ -246,9 +252,9 @@ class MedicineBot:
 
         return "medicine"
 
-    # ========================================================
-    # NLP KEYWORDS
-    # ========================================================
+    # =====================================================
+    # UNDERSTAND QUERY
+    # =====================================================
 
     def understand_query(self, query):
 
@@ -269,50 +275,33 @@ class MedicineBot:
 
         return " ".join(keywords)
 
-    # ========================================================
-    # FUZZY SEARCH
-    # ========================================================
+    # =====================================================
+    # EXTRACT STRENGTH
+    # =====================================================
 
-    def fuzzy_search(self, query):
+    def extract_strength(self, text):
 
-        query_clean = self.clean_text(
-            query
+        text = str(text).lower()
+
+        match = re.search(
+            r'(\d+)\s?(mg|ml)',
+            text
         )
 
-        result = process.extractOne(
-            query_clean,
-            self.medicine_names,
-            scorer=fuzz.token_sort_ratio
-        )
+        if match:
+            return match.group(1)
 
-        if result is None:
-            return None
+        return None
 
-        best_match_name = result[0]
-        score = result[1]
-
-        print("🔍 Fuzzy Score:", score)
-
-        if score < 60:
-            return None
-
-        matched_row = self.df[
-            self.df["search_name"]
-            == best_match_name
-        ]
-
-        if matched_row.empty:
-            return None
-
-        return matched_row.iloc[0]
-
-    # ========================================================
+    # =====================================================
     # SEMANTIC SEARCH
-    # ========================================================
+    # =====================================================
 
     def semantic_search(self, query):
 
-        print("\n🧠 Semantic Search Running...")
+        print(
+            "\n🧠 Semantic Search Running..."
+        )
 
         cleaned_query = (
             self.understand_query(query)
@@ -324,10 +313,12 @@ class MedicineBot:
             )
         )
 
-        similarities = cosine_similarity(
-            query_embedding,
-            self.embeddings
-        )[0]
+        similarities = (
+            cosine_similarity(
+                query_embedding,
+                self.embeddings
+            )[0]
+        )
 
         best_index = np.argmax(
             similarities
@@ -350,16 +341,18 @@ class MedicineBot:
 
         return None
 
-    # ========================================================
+    # =====================================================
     # SYMPTOM SEARCH
-    # ========================================================
+    # =====================================================
 
     def symptom_search(self, query):
 
-        print("\n🧠 Running Symptom Search...")
+        print(
+            "\n🧠 Running Symptom Search..."
+        )
 
-        cleaned_query = self.clean_query(
-            query
+        cleaned_query = (
+            self.clean_query(query)
         )
 
         cleaned_query = (
@@ -374,10 +367,12 @@ class MedicineBot:
             )
         )
 
-        similarities = cosine_similarity(
-            query_embedding,
-            self.embeddings
-        )[0]
+        similarities = (
+            cosine_similarity(
+                query_embedding,
+                self.embeddings
+            )[0]
+        )
 
         top_indices = (
             similarities.argsort()[-5:][::-1]
@@ -397,9 +392,9 @@ class MedicineBot:
 
         return medicines
 
-    # ========================================================
+    # =====================================================
     # SEARCH MEDICINE
-    # ========================================================
+    # =====================================================
 
     def search_medicine(self, query):
 
@@ -407,14 +402,14 @@ class MedicineBot:
             query
         )
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # SYMPTOM SEARCH
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         if intent == "symptom":
 
-            medicines = self.symptom_search(
-                query
+            medicines = (
+                self.symptom_search(query)
             )
 
             if not medicines:
@@ -422,25 +417,28 @@ class MedicineBot:
 
             return medicines
 
-        # ----------------------------------------------------
-        # MEDICINE LOOKUP
-        # ----------------------------------------------------
+        # -------------------------------------------------
+        # NORMAL SEARCH
+        # -------------------------------------------------
 
-        query = self.clean_query(
-            query
-        )
+        query = self.clean_query(query)
 
         query_clean = self.clean_text(
             query
         )
 
         print(
-            f"\n🔍 Searching: {query_clean}"
+            f"\n🔍 Searching for: "
+            f"{query_clean}"
         )
 
-        # ----------------------------------------------------
+        query_strength = (
+            self.extract_strength(query)
+        )
+
+        # -------------------------------------------------
         # EXACT MATCH
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         exact_match = self.df[
             self.df["search_name"]
@@ -454,9 +452,9 @@ class MedicineBot:
 
             return exact_match.iloc[0]
 
-        # ----------------------------------------------------
-        # STARTS WITH
-        # ----------------------------------------------------
+        # -------------------------------------------------
+        # STARTS WITH MATCH
+        # -------------------------------------------------
 
         starts_match = self.df[
             self.df["search_name"]
@@ -472,9 +470,9 @@ class MedicineBot:
 
             return starts_match.iloc[0]
 
-        # ----------------------------------------------------
-        # CONTAINS
-        # ----------------------------------------------------
+        # -------------------------------------------------
+        # CONTAINS MATCH
+        # -------------------------------------------------
 
         contains_match = self.df[
             self.df["search_name"]
@@ -487,35 +485,95 @@ class MedicineBot:
 
         if not contains_match.empty:
 
-            print("✅ Contains Match Found")
+            print(
+                "✅ Contains Match Found"
+            )
 
             return contains_match.iloc[0]
 
-        # ----------------------------------------------------
-        # FUZZY SEARCH
-        # ----------------------------------------------------
+        # -------------------------------------------------
+        # FUZZY MATCH
+        # -------------------------------------------------
 
-        fuzzy_result = self.fuzzy_search(
-            query_clean
-        )
+        best_match = None
+        best_score = 0
 
-        if fuzzy_result is not None:
+        for _, row in self.df.iterrows():
 
-            print("✅ Fuzzy Match Found")
+            medicine_name = row[
+                "search_name"
+            ]
 
-            return fuzzy_result
+            cleaned_name = (
+                self.clean_text(
+                    medicine_name
+                )
+            )
 
-        # ----------------------------------------------------
+            score = fuzz.token_sort_ratio(
+                query_clean,
+                cleaned_name
+            )
+
+            med_strength = (
+                self.extract_strength(
+                    medicine_name
+                )
+            )
+
+            if (
+                query_strength
+                and med_strength
+            ):
+
+                if (
+                    query_strength
+                    == med_strength
+                ):
+
+                    score += 10
+
+                else:
+
+                    score -= 20
+
+            if score > best_score:
+
+                best_score = score
+                best_match = row
+
+        if best_match is not None:
+
+            print(
+                "\n🔍 Closest Match Found"
+            )
+
+            print(
+                "Medicine:",
+                best_match["name"]
+            )
+
+            print(
+                "Score:",
+                best_score
+            )
+
+            if best_score >= 60:
+                return best_match
+
+        # -------------------------------------------------
         # SEMANTIC SEARCH
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
-        semantic_result = self.semantic_search(
-            query
+        semantic_result = (
+            self.semantic_search(query)
         )
 
         if semantic_result is not None:
 
-            print("✅ Semantic Match Found")
+            print(
+                "✅ Semantic Match Found"
+            )
 
             return semantic_result
 
@@ -523,9 +581,9 @@ class MedicineBot:
 
         return None
 
-    # ========================================================
+    # =====================================================
     # GET VALUES
-    # ========================================================
+    # =====================================================
 
     def get_values(self, row, keyword):
 
@@ -561,9 +619,9 @@ class MedicineBot:
 
         return values
 
-    # ========================================================
-    # AI SUMMARY
-    # ========================================================
+    # =====================================================
+    # GENERATE AI SUMMARY
+    # =====================================================
 
     def generate_ai_summary(
         self,
@@ -578,12 +636,13 @@ class MedicineBot:
             prompt = f"""
 You are a helpful medicine assistant.
 
-Explain this medicine simply.
+Explain this medicine in simple and
+beginner friendly language.
 
-Medicine:
+Medicine Name:
 {medicine_name}
 
-Salts:
+Salts / Composition:
 {salts}
 
 Uses:
@@ -593,9 +652,11 @@ Side Effects:
 {side_effects}
 
 Instructions:
-- Beginner friendly
-- Short response
-- Avoid medical jargon
+- Explain what the medicine is
+- Mention common uses
+- Mention important side effects
+- Keep it short
+- Avoid difficult medical jargon
 """
 
             completion = (
@@ -621,21 +682,21 @@ Instructions:
 
         except Exception as e:
 
-            print("❌ AI Error:", e)
+            print("❌ Groq Error:", e)
 
             return (
                 "AI Summary Unavailable."
             )
 
-    # ========================================================
+    # =====================================================
     # FORMAT RESPONSE
-    # ========================================================
+    # =====================================================
 
     def format_response(self, row):
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # MULTIPLE MEDICINES
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         if isinstance(row, list):
 
@@ -673,26 +734,27 @@ Instructions:
 
             return response
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # NO RESULT
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         if row is None:
 
             return """
 # ❌ Medicine Not Found
 
-Try:
+Try searching:
 - Dolo 650
 - Crocin
 - Calpol
+- Azithromycin
 - Medicine for fever
 - I have headache
 """
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # SINGLE MEDICINE
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         medicine_name = row.get(
             "name",
@@ -726,16 +788,22 @@ Try:
             "substitute"
         )
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # AI SUMMARY
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
-        ai_summary = self.generate_ai_summary(
-            medicine_name,
-            salts,
-            uses,
-            side_effects
+        ai_summary = (
+            self.generate_ai_summary(
+                medicine_name,
+                salts,
+                uses,
+                side_effects
+            )
         )
+
+        # -------------------------------------------------
+        # FORMAT TEXT
+        # -------------------------------------------------
 
         uses_text = (
             "\n".join(
@@ -761,9 +829,9 @@ Try:
             "Not Available"
         )
 
-        # ----------------------------------------------------
+        # -------------------------------------------------
         # FINAL RESPONSE
-        # ----------------------------------------------------
+        # -------------------------------------------------
 
         response = f"""
 # 💊 {medicine_name}
@@ -788,4 +856,3 @@ Try:
 """
 
         return response
-```
