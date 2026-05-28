@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# FACTS
+# MEDICINE FACTS
 # =====================================================
 
 medicine_facts = [
@@ -36,7 +36,7 @@ random_fact = random.choice(medicine_facts)
 # CUSTOM CSS
 # =====================================================
 
-st.markdown("""
+custom_css = """
 <style>
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -55,8 +55,8 @@ APP
 }
 
 #MainMenu,
-footer,
-header {
+header,
+footer {
     visibility: hidden;
 }
 
@@ -73,10 +73,7 @@ MAIN CONTAINER
     padding-right: 1rem !important;
 
     /*
-    VERY IMPORTANT
-
-    Prevents content from hiding behind
-    fixed search box
+    Prevent content hiding behind searchbox
     */
     padding-bottom: 220px !important;
 }
@@ -86,22 +83,33 @@ HEADER
 ===================================================== */
 
 .app-header {
+
     text-align: center;
+
     padding-top: 2rem;
+
     padding-bottom: 1rem;
 }
 
 .app-title {
+
     font-size: 2.8rem;
+
     font-weight: 800;
-    color: #ffffff;
-    margin-bottom: 0.4rem;
+
+    color: white;
+
     letter-spacing: -1px;
+
+    margin-bottom: 0.5rem;
 }
 
 .app-subtitle {
+
     color: #7d7d7d;
+
     font-size: 1rem;
+
     line-height: 1.6;
 }
 
@@ -111,10 +119,12 @@ FACT CARD
 
 .fact-wrapper {
 
-    min-height: 46vh;
+    min-height: 45vh;
 
     display: flex;
+
     justify-content: center;
+
     align-items: center;
 }
 
@@ -124,7 +134,7 @@ FACT CARD
 
     background: #111111;
 
-    border: 1px solid #1f1f1f;
+    border: 1px solid #1e1e1e;
 
     border-radius: 20px;
 
@@ -133,7 +143,7 @@ FACT CARD
 
 .fact-label {
 
-    color: #5f5f5f;
+    color: #5d5d5d;
 
     font-size: 0.78rem;
 
@@ -148,9 +158,9 @@ FACT CARD
 
 .fact-text {
 
-    color: #e2e2e2;
+    color: #e0e0e0;
 
-    font-size: 1.4rem;
+    font-size: 1.35rem;
 
     line-height: 1.9;
 
@@ -183,7 +193,7 @@ SEARCH BOX
     position: fixed !important;
 
     /*
-    1 CM ABOVE BOTTOM
+    1 cm above bottom
     */
     bottom: 1cm !important;
 
@@ -195,28 +205,26 @@ SEARCH BOX
 
     background: #111111 !important;
 
-    border: 1px solid #262626 !important;
+    border: 1px solid #252525 !important;
 
     border-radius: 18px !important;
 
-    padding: 0.5rem !important;
+    padding: 0.45rem !important;
 
     z-index: 999999 !important;
 
     box-shadow: 0px -5px 30px rgba(0,0,0,0.65) !important;
 }
 
-/* TEXTAREA */
+/* INPUT */
 
 [data-testid="stChatInput"] textarea {
 
-    color: #ffffff !important;
+    color: white !important;
 
     background: transparent !important;
 
     font-size: 1rem !important;
-
-    line-height: 1.5 !important;
 }
 
 [data-testid="stChatInput"] textarea::placeholder {
@@ -238,7 +246,7 @@ h2 {
 
     padding-bottom: 0.4rem;
 
-    margin-top: 1.5rem !important;
+    margin-top: 1.4rem !important;
 }
 
 p, li {
@@ -251,7 +259,7 @@ p, li {
 }
 
 strong {
-    color: #ffffff !important;
+    color: white !important;
 }
 
 code {
@@ -273,10 +281,6 @@ SCROLLBAR
     width: 4px;
 }
 
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
 ::-webkit-scrollbar-thumb {
     background: #222222;
     border-radius: 20px;
@@ -294,9 +298,6 @@ MOBILE
 
         padding-right: 0.8rem !important;
 
-        /*
-        EXTRA SPACE FOR MOBILE
-        */
         padding-bottom: 240px !important;
     }
 
@@ -331,7 +332,9 @@ MOBILE
 }
 
 </style>
-""", unsafe_allow_html=True)
+"""
+
+st.markdown(custom_css, unsafe_allow_html=True)
 
 # =====================================================
 # LOAD BOT
@@ -354,7 +357,7 @@ if "messages" not in st.session_state:
 # HEADER
 # =====================================================
 
-st.markdown("""
+header_html = """
 <div class="app-header">
 
     <div class="app-title">
@@ -366,7 +369,9 @@ st.markdown("""
     </div>
 
 </div>
-""", unsafe_allow_html=True)
+"""
+
+st.markdown(header_html, unsafe_allow_html=True)
 
 # =====================================================
 # EMPTY SCREEN
@@ -374,7 +379,7 @@ st.markdown("""
 
 if len(st.session_state.messages) == 0:
 
-    st.markdown(f"""
+    fact_html = f"""
     <div class="fact-wrapper">
 
         <div class="fact-card">
@@ -390,7 +395,9 @@ if len(st.session_state.messages) == 0:
         </div>
 
     </div>
-    """, unsafe_allow_html=True)
+    """
+
+    st.markdown(fact_html, unsafe_allow_html=True)
 
 # =====================================================
 # CHAT HISTORY
@@ -446,11 +453,11 @@ if query:
 
             except Exception as e:
 
-                error_msg = f"❌ Something went wrong: {str(e)}"
+                error_message = f"❌ Something went wrong: {str(e)}"
 
-                st.error(error_msg)
+                st.error(error_message)
 
                 st.session_state.messages.append({
                     "role": "assistant",
-                    "content": error_msg
+                    "content": error_message
                 })
