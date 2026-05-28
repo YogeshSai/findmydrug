@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 from medicine_bot import MedicineBot
 import random
@@ -420,4 +419,3 @@ if query:
                     "role": "assistant",
                     "content": error_message
                 })
-```
