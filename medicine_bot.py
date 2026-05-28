@@ -298,101 +298,71 @@ class MedicineBot:
     # =====================================================
 
     def generate_ai_summary(
-    self,
-    medicine_name,
-    salts
-):
+        self,
+        medicine_name,
+        salts
+    ):
 
-    try:
+        try:
 
-        # -------------------------------------------------
-        # CONVERT LIST TO STRING
-        # -------------------------------------------------
+            prompt = f"""
+You are a medicine assistant.
 
-        if isinstance(salts, list):
-            salts_text = ", ".join(salts)
-        else:
-            salts_text = str(salts)
-
-        # -------------------------------------------------
-        # PROMPT
-        # -------------------------------------------------
-
-        prompt = f"""
-You are a medical assistant.
-
-Medicine Name:
+Medicine:
 {medicine_name}
 
 Composition:
-{salts_text}
+{salts}
 
 STRICT RULES:
-- Explain what the medicine contains
-- Explain the purpose in simple language
-- Keep answer short (3-4 lines)
-- DO NOT mention side effects
-- DO NOT mention substitutes
-- DO NOT use bullet points
+- ONLY explain what the medicine is
+- ONLY explain what the salts are
+- Keep response within 3-4 lines
+- Use simple language
+- DO NOT say:
+  - "you can use"
+  - "used for"
+  - "helps with"
+  - "side effects include"
 """
 
-        # -------------------------------------------------
-        # GROQ API
-        # -------------------------------------------------
-
-        completion = self.client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            temperature=0.2,
-            max_tokens=120
-        )
-
-        # -------------------------------------------------
-        # EXTRACT RESPONSE
-        # -------------------------------------------------
-
-        summary = (
-            completion
-            .choices[0]
-            .message
-            .content
-        )
-
-        # -------------------------------------------------
-        # REMOVE UNWANTED PHRASES
-        # -------------------------------------------------
-
-        unwanted_phrases = [
-            r"you can use",
-            r"used for",
-            r"helps with",
-            r"side effects include",
-            r"common side effects",
-            r"consult your doctor"
-        ]
-
-        for phrase in unwanted_phrases:
-
-            summary = re.sub(
-                phrase,
-                "",
-                summary,
-                flags=re.IGNORECASE
+            completion = (
+                self.client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    temperature=0.1,
+                    max_tokens=120
+                )
             )
 
-        return summary.strip()
+            summary = (
+                completion
+                .choices[0]
+                .message
+                .content
+            )
 
-    except Exception as e:
 
-        print("❌ Groq Error:", e)
+            for phrase in unwanted_phrases:
+                summary = re.sub(
+                    phrase,
+                    "",
+                    summary,
+                    flags=re.IGNORECASE
+                )
 
-        return "AI Summary Unavailable."
+            return summary.strip()
 
+        except Exception as e:
+
+            print("❌ Groq Error:", e)
+
+            return "AI Summary Unavailable."
 
     # =====================================================
     # FORMAT RESPONSE
