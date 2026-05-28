@@ -1,9 +1,5 @@
 ```python
 # ============================================================
-# AI + NLP MEDICINE BOT
-# ============================================================
-
-# ============================================================
 # IMPORTS
 # ============================================================
 
@@ -25,18 +21,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 # ============================================================
-# STREAMLIT CONFIG
-# ============================================================
-
-st.set_page_config(
-    page_title="AI MedicineBot",
-    page_icon="💊",
-    layout="centered"
-)
-
-
-# ============================================================
-# MEDICINE BOT CLASS
+# MEDICINE BOT
 # ============================================================
 
 class MedicineBot:
@@ -56,7 +41,7 @@ class MedicineBot:
         self.df = self.load_dataset()
 
         # ----------------------------------------------------
-        # CLEAN MEDICINE NAMES
+        # SEARCH NAME
         # ----------------------------------------------------
 
         self.df["search_name"] = (
@@ -99,17 +84,15 @@ class MedicineBot:
             "en_core_web_sm"
         )
 
-        self.embedding_model = (
-            SentenceTransformer(
-                "all-MiniLM-L6-v2"
-            )
+        self.embedding_model = SentenceTransformer(
+            "all-MiniLM-L6-v2"
         )
 
         # ----------------------------------------------------
         # CREATE EMBEDDINGS
         # ----------------------------------------------------
 
-        print("⚡ Creating Semantic Embeddings...")
+        print("⚡ Creating Embeddings...")
 
         self.embeddings = (
             self.embedding_model.encode(
@@ -148,7 +131,7 @@ class MedicineBot:
                 )
 
         print("✅ Dataset Loaded")
-        print(f"📦 Medicines Loaded: {len(df)}")
+        print(f"📦 Total Medicines: {len(df)}")
 
         return df
 
@@ -161,7 +144,7 @@ class MedicineBot:
         if pd.isna(text):
             return ""
 
-        text = str(text).lower().strip()
+        text = str(text).lower()
 
         remove_words = [
             "tablet",
@@ -171,14 +154,18 @@ class MedicineBot:
             "capsules",
             "cap",
             "syrup",
-            "oral suspension",
-            "injection",
+            "medicine",
+            "drug",
             "mg",
             "ml"
         ]
 
         for word in remove_words:
-            text = text.replace(word, "")
+
+            text = text.replace(
+                word,
+                ""
+            )
 
         text = re.sub(
             r'[^a-zA-Z0-9\s]',
@@ -186,35 +173,33 @@ class MedicineBot:
             text
         )
 
-        text = " ".join(text.split())
-
-        return text
+        return " ".join(text.split())
 
     # ========================================================
-    # EXTRACT MEDICINE FROM NLP QUERY
+    # CLEAN NLP QUERY
     # ========================================================
 
-    def extract_medicine_name(self, query):
+    def clean_query(self, query):
 
         query = query.lower()
 
-        patterns = [
-            r'what are uses of',
-            r'uses of',
+        remove_patterns = [
             r'what is',
+            r'what are',
             r'tell me about',
+            r'uses of',
             r'side effects of',
+            r'substitute for',
             r'substitutes for',
             r'medicine for',
             r'tablet for',
             r'capsule for',
-            r'syrup for',
-            r'what does',
-            r'how does',
-            r'give me details about'
+            r'i have',
+            r'suffering from',
+            r'give me medicine for'
         ]
 
-        for pattern in patterns:
+        for pattern in remove_patterns:
 
             query = re.sub(
                 pattern,
@@ -231,7 +216,38 @@ class MedicineBot:
         return query.strip()
 
     # ========================================================
-    # UNDERSTAND QUERY USING NLP
+    # DETECT QUERY TYPE
+    # ========================================================
+
+    def detect_intent(self, query):
+
+        query = query.lower()
+
+        symptom_keywords = [
+            "medicine for",
+            "tablet for",
+            "capsule for",
+            "i have",
+            "suffering from",
+            "fever",
+            "cold",
+            "headache",
+            "pain",
+            "infection",
+            "cough",
+            "vomiting",
+            "allergy"
+        ]
+
+        for word in symptom_keywords:
+
+            if word in query:
+                return "symptom"
+
+        return "medicine"
+
+    # ========================================================
+    # NLP KEYWORDS
     # ========================================================
 
     def understand_query(self, query):
@@ -247,7 +263,9 @@ class MedicineBot:
                 and not token.is_punct
             ):
 
-                keywords.append(token.text)
+                keywords.append(
+                    token.text
+                )
 
         return " ".join(keywords)
 
@@ -257,8 +275,12 @@ class MedicineBot:
 
     def fuzzy_search(self, query):
 
+        query_clean = self.clean_text(
+            query
+        )
+
         result = process.extractOne(
-            query,
+            query_clean,
             self.medicine_names,
             scorer=fuzz.token_sort_ratio
         )
@@ -266,7 +288,7 @@ class MedicineBot:
         if result is None:
             return None
 
-        best_match = result[0]
+        best_match_name = result[0]
         score = result[1]
 
         print("🔍 Fuzzy Score:", score)
@@ -276,7 +298,7 @@ class MedicineBot:
 
         matched_row = self.df[
             self.df["search_name"]
-            == best_match
+            == best_match_name
         ]
 
         if matched_row.empty:
@@ -290,13 +312,15 @@ class MedicineBot:
 
     def semantic_search(self, query):
 
-        print("🧠 Running Semantic Search...")
+        print("\n🧠 Semantic Search Running...")
 
-        query = self.understand_query(query)
+        cleaned_query = (
+            self.understand_query(query)
+        )
 
         query_embedding = (
             self.embedding_model.encode(
-                [query]
+                [cleaned_query]
             )
         )
 
@@ -305,17 +329,73 @@ class MedicineBot:
             self.embeddings
         )[0]
 
-        best_index = np.argmax(similarities)
+        best_index = np.argmax(
+            similarities
+        )
 
-        best_score = similarities[best_index]
+        best_score = similarities[
+            best_index
+        ]
 
-        print("⚡ Semantic Score:", best_score)
+        print(
+            "Semantic Score:",
+            best_score
+        )
 
         if best_score > 0.35:
 
-            return self.df.iloc[best_index]
+            return self.df.iloc[
+                best_index
+            ]
 
         return None
+
+    # ========================================================
+    # SYMPTOM SEARCH
+    # ========================================================
+
+    def symptom_search(self, query):
+
+        print("\n🧠 Running Symptom Search...")
+
+        cleaned_query = self.clean_query(
+            query
+        )
+
+        cleaned_query = (
+            self.understand_query(
+                cleaned_query
+            )
+        )
+
+        query_embedding = (
+            self.embedding_model.encode(
+                [cleaned_query]
+            )
+        )
+
+        similarities = cosine_similarity(
+            query_embedding,
+            self.embeddings
+        )[0]
+
+        top_indices = (
+            similarities.argsort()[-5:][::-1]
+        )
+
+        medicines = []
+
+        for idx in top_indices:
+
+            score = similarities[idx]
+
+            if score > 0.30:
+
+                medicines.append(
+                    self.df.iloc[idx]
+                )
+
+        return medicines
 
     # ========================================================
     # SEARCH MEDICINE
@@ -323,21 +403,39 @@ class MedicineBot:
 
     def search_medicine(self, query):
 
-        print(f"\n🔎 User Query: {query}")
-
-        # ----------------------------------------------------
-        # NLP EXTRACTION
-        # ----------------------------------------------------
-
-        extracted_query = (
-            self.extract_medicine_name(query)
+        intent = self.detect_intent(
+            query
         )
 
-        print("🧠 Extracted Query:",
-              extracted_query)
+        # ----------------------------------------------------
+        # SYMPTOM SEARCH
+        # ----------------------------------------------------
+
+        if intent == "symptom":
+
+            medicines = self.symptom_search(
+                query
+            )
+
+            if not medicines:
+                return None
+
+            return medicines
+
+        # ----------------------------------------------------
+        # MEDICINE LOOKUP
+        # ----------------------------------------------------
+
+        query = self.clean_query(
+            query
+        )
 
         query_clean = self.clean_text(
-            extracted_query
+            query
+        )
+
+        print(
+            f"\n🔍 Searching: {query_clean}"
         )
 
         # ----------------------------------------------------
@@ -357,7 +455,7 @@ class MedicineBot:
             return exact_match.iloc[0]
 
         # ----------------------------------------------------
-        # STARTS WITH MATCH
+        # STARTS WITH
         # ----------------------------------------------------
 
         starts_match = self.df[
@@ -368,18 +466,23 @@ class MedicineBot:
 
         if not starts_match.empty:
 
-            print("✅ Starts-With Match Found")
+            print(
+                "✅ Starts-With Match Found"
+            )
 
             return starts_match.iloc[0]
 
         # ----------------------------------------------------
-        # CONTAINS MATCH
+        # CONTAINS
         # ----------------------------------------------------
 
         contains_match = self.df[
             self.df["search_name"]
             .apply(self.clean_text)
-            .str.contains(query_clean, na=False)
+            .str.contains(
+                query_clean,
+                na=False
+            )
         ]
 
         if not contains_match.empty:
@@ -421,7 +524,7 @@ class MedicineBot:
         return None
 
     # ========================================================
-    # GET COLUMN VALUES
+    # GET VALUES
     # ========================================================
 
     def get_values(self, row, keyword):
@@ -445,16 +548,21 @@ class MedicineBot:
                         "null"
                     ]
 
-                    if value.lower() not in invalid_values:
+                    if (
+                        value.lower()
+                        not in invalid_values
+                    ):
 
                         values.append(value)
 
-        values = list(dict.fromkeys(values))
+        values = list(
+            dict.fromkeys(values)
+        )
 
         return values
 
     # ========================================================
-    # GENERATE AI SUMMARY
+    # AI SUMMARY
     # ========================================================
 
     def generate_ai_summary(
@@ -468,15 +576,14 @@ class MedicineBot:
         try:
 
             prompt = f"""
-You are a helpful AI medicine assistant.
+You are a helpful medicine assistant.
 
-Explain this medicine in simple,
-easy-to-understand language.
+Explain this medicine simply.
 
 Medicine:
 {medicine_name}
 
-Composition:
+Salts:
 {salts}
 
 Uses:
@@ -486,12 +593,9 @@ Side Effects:
 {side_effects}
 
 Instructions:
-- Keep response beginner friendly
-- Mention medicine purpose
-- Mention common uses
-- Mention side effects
-- Avoid complex medical terms
-- Keep it short
+- Beginner friendly
+- Short response
+- Avoid medical jargon
 """
 
             completion = (
@@ -529,18 +633,66 @@ Instructions:
 
     def format_response(self, row):
 
+        # ----------------------------------------------------
+        # MULTIPLE MEDICINES
+        # ----------------------------------------------------
+
+        if isinstance(row, list):
+
+            response = (
+                "# 💊 Recommended Medicines\n\n"
+            )
+
+            for medicine in row:
+
+                medicine_name = medicine.get(
+                    "name",
+                    "Unknown Medicine"
+                )
+
+                uses = self.get_values(
+                    medicine,
+                    "use"
+                )
+
+                response += (
+                    f"## {medicine_name}\n\n"
+                )
+
+                if uses:
+
+                    response += "### Uses\n"
+
+                    for use in uses[:3]:
+
+                        response += (
+                            f"- {use}\n"
+                        )
+
+                response += "\n---\n"
+
+            return response
+
+        # ----------------------------------------------------
+        # NO RESULT
+        # ----------------------------------------------------
+
         if row is None:
 
             return """
 # ❌ Medicine Not Found
 
-Try Searching:
-
+Try:
 - Dolo 650
 - Crocin
 - Calpol
-- Azithromycin
+- Medicine for fever
+- I have headache
 """
+
+        # ----------------------------------------------------
+        # SINGLE MEDICINE
+        # ----------------------------------------------------
 
         medicine_name = row.get(
             "name",
@@ -584,10 +736,6 @@ Try Searching:
             uses,
             side_effects
         )
-
-        # ----------------------------------------------------
-        # FORMAT LISTS
-        # ----------------------------------------------------
 
         uses_text = (
             "\n".join(
@@ -640,80 +788,4 @@ Try Searching:
 """
 
         return response
-
-
-# ============================================================
-# LOAD BOT
-# ============================================================
-
-@st.cache_resource
-def load_bot():
-
-    return MedicineBot()
-
-
-bot = load_bot()
-
-
-# ============================================================
-# UI
-# ============================================================
-
-st.title("💊 AI MedicineBot")
-
-st.markdown("""
-Search using:
-
-- Medicine Names
-- Symptoms
-- Natural Language Queries
-- AI Semantic Search
-""")
-
-# ============================================================
-# SEARCH INPUT
-# ============================================================
-
-query = st.text_input(
-    "Enter medicine or symptoms:"
-)
-
-# ============================================================
-# SEARCH BUTTON
-# ============================================================
-
-if st.button("Search"):
-
-    if query.strip() == "":
-
-        st.warning(
-            "Please enter a query."
-        )
-
-    else:
-
-        with st.spinner(
-            "Searching Medicine Database..."
-        ):
-
-            result = bot.search_medicine(
-                query
-            )
-
-            response = bot.format_response(
-                result
-            )
-
-            st.markdown(response)
-
-# ============================================================
-# FOOTER
-# ============================================================
-
-st.markdown("---")
-
-st.caption(
-    "⚠️ Educational Purpose Only. "
-    "Not a replacement for professional medical advice."
-)
 ```
