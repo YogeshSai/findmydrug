@@ -300,9 +300,7 @@ class MedicineBot:
     def generate_ai_summary(
         self,
         medicine_name,
-        salts,
-        uses,
-        side_effects
+        salts
     ):
 
         try:
